@@ -119,7 +119,8 @@ public class Tile extends BasicTile implements Cloneable {
 		g2d.translate(newX, newY);
 		g2d.rotate(Math.toRadians(renderAngle));
 		g2d.drawImage(
-				maskTexture(main.getTexture().getShadow(side),
+				maskTexture(
+						main.getTexture().getShadow(side),
 						0x00FFFFFF | ((int) (0x9F * (2 - size) * (2 - size)) << 24)),
 				(int) (-scale * flip / 2), (int) (-scale / 2), (int) (scale * flip), (int) (scale), null);
 		g2d.rotate(Math.toRadians(-renderAngle));

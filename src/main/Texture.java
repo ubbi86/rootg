@@ -12,11 +12,9 @@ import tiles.Side;
 import tiles.Tile;
 
 public class Texture {
-	private BufferedImage[] spritesheetF = new BufferedImage[3];
-	private BufferedImage[] spritesheetB = new BufferedImage[3];
+	private BufferedImage[] spritesheet = new BufferedImage[6];
 	protected BufferedImage background;
-	private BufferedImage shadowF;
-	private BufferedImage shadowB;
+	private BufferedImage[] shadow= new BufferedImage[2];
 	private BufferedImage extraTex;
 	private BufferedImage marketDump;
 
@@ -31,8 +29,8 @@ public class Texture {
 		try {
 			background = ImageIO.read(getClass().getResourceAsStream("/background.jpg"));
 			for (int i = 0; i < 3; i++) {
-				spritesheetF[i] = ImageIO.read(getClass().getResourceAsStream("/textureF" + i + ".png"));
-				spritesheetB[i] = ImageIO.read(getClass().getResourceAsStream("/textureB" + i + ".png"));
+				spritesheet[i+3] = ImageIO.read(getClass().getResourceAsStream("/textureF" + i + ".png"));
+				spritesheet[i] = ImageIO.read(getClass().getResourceAsStream("/textureB" + i + ".png"));
 			}
 			extraTex = ImageIO.read(getClass().getResourceAsStream("/extra.png"));
 			createShadows();
@@ -46,7 +44,7 @@ public class Texture {
 	}
 
 	public BufferedImage getTile(int col, int row, Side side) {
-		return (side == Side.BACK ? spritesheetB[0] : spritesheetF[0]).getSubimage(col * WIDTH / COLS,
+		return spritesheet[(side == Side.BACK ? 0 : 3)].getSubimage(col * WIDTH / COLS,
 				row * HEIGHT / ROWS, TILEWIDTH, TILEHEIGHT);
 	}
 
@@ -56,7 +54,7 @@ public class Texture {
 		int row = t.getTileNumber() / Texture.COLS;
 		int angle = t.getAngle();
 		int sheet = (angle / 60) % 3;
-		BufferedImage image = (side == Side.BACK ? spritesheetB[sheet] : spritesheetF[sheet])
+		BufferedImage image = spritesheet[sheet+(side == Side.BACK ? 0 : 3)]
 				.getSubimage(col * WIDTH / COLS, row * HEIGHT / ROWS, TILEWIDTH, TILEHEIGHT);
 		if (angle > 120) {
 			AffineTransform tx = AffineTransform.getScaleInstance(-1, -1);
@@ -87,20 +85,20 @@ public class Texture {
 		for (int i = 0; i < imagePixels.length; i++) {
 			imagePixels[i] &= 0x5F000000;
 		}
-		shadowF = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		shadowF.setRGB(0, 0, width, height, imagePixels, 0, width);
+		shadow[1] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		shadow[1].setRGB(0, 0, width, height, imagePixels, 0, width);
 
 		image = getTile(0, 0, Side.BACK);
 		imagePixels = image.getRGB(0, 0, width, height, null, 0, width);
 		for (int i = 0; i < imagePixels.length; i++) {
 			imagePixels[i] &= 0xaf000000;
 		}
-		shadowB = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		shadowB.setRGB(0, 0, width, height, imagePixels, 0, width);
+		shadow[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		shadow[0].setRGB(0, 0, width, height, imagePixels, 0, width);
 	}
 
 	public BufferedImage getShadow(Side side) {
-		return (side == Side.BACK ? shadowB : shadowF);
+		return shadow[(side == Side.BACK ? 0 : 1)];
 	}
 
 	public BufferedImage getSwitch(Color color, boolean on) {
