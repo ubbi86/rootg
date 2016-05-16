@@ -5,26 +5,26 @@ import java.util.ArrayList;
 
 import main.Main;
 
-public class TerminalTileStock {
-	private ArrayList<TerminalTile> tiles;
-
+public class TerminalTileStock extends ArrayList<TerminalTile>{
+	//private ArrayList<TerminalTile> tiles;
+	//CONSTRUCTORS
 	public TerminalTileStock(Main main) {
-		tiles = new ArrayList<TerminalTile>();
+		//tiles = new ArrayList<TerminalTile>();
 		for (int i = 11; i < 20; i++) {
 			TerminalTile t = new TerminalTile(i, main);
-			tiles.add(t);
+			add(t);
 		}
 	}
-	
+	//GETTERS&SETTERS
 	public void setSide(Side side){
-		for (TerminalTile t:tiles)
+		for (TerminalTile t:this)
 			t.setSide((side==Side.BACK?Side.FRONT:Side.BACK));
 	}
 
 	public ArrayList<TerminalTile> getTerminalTiles(Color color) {
 		ArrayList<TerminalTile> ans = new ArrayList<TerminalTile>();
-		for (int i = 0; i < tiles.size(); i++) {
-			TerminalTile t = tiles.get(i);
+		for (int i = 0; i < size(); i++) {
+			TerminalTile t = get(i);
 			if (t.getColor() == color) {
 				ans.add(t);
 			}
@@ -33,7 +33,7 @@ public class TerminalTileStock {
 	}
 
 	public TerminalTile getTerminalTile(Color color, int speed) {
-		for (TerminalTile t : tiles)
+		for (TerminalTile t : this)
 			if (t.getColor() == color && t.getSpeed() == speed)
 				return t;
 		return null;
@@ -41,23 +41,19 @@ public class TerminalTileStock {
 
 	public ArrayList<Integer> getTerminalTileNumbers(){
 		ArrayList<Integer> ans=new ArrayList<Integer>();
-		for (TerminalTile t : tiles)
+		for (TerminalTile t : this)
 			ans.add(t.getTileNumber());
 		return ans;
 	}
 
 	public ArrayList<TerminalTile> getTerminalTiles(int speed) {
 		ArrayList<TerminalTile> ans = new ArrayList<TerminalTile>();
-		for (int i = 0; i < tiles.size(); i++) {
-			TerminalTile t = tiles.get(i);
+		for (int i = 0; i < size(); i++) {
+			TerminalTile t = get(i);
 			if (t.getSpeed() == speed) {
 				ans.add(t);
 			}
 		}
 		return ans;
-	}
-
-	public void add(TerminalTile t) {
-		tiles.add(t);
 	}
 }
