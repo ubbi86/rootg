@@ -57,7 +57,7 @@ public class Helper {
 		add("Your opponent will choose another color. Green for example",
 				main.getTermStock().getTerminalTile(Color.GREEN, 1), true);
 		add("We will play a two players match, so click on table", w / 3, h / 3);
-		add("Get familiar with controls. Explore the table with middle button or arrow keys to find the spark", w + 50, 500, false);
+		add("Get familiar with controls. Explore the table with the middle click or arrow keys to find the spark", w + 50, 500, false);
 		add("You can do the same with right click or + and - to zoom in and out", w - 50, 2 * h, false);
 		add("Here you can see whose turn is: the number in the big square shows the charge of the player.", 150, 50);
 		add("This is the core. You can click on it if you need to draw tiles", core);
@@ -71,25 +71,25 @@ public class Helper {
 		add("You can also draw new tiles clicking on the stack", main.getTileStack().getCenter(), false);
 		add("Choose the normal one", main.getTermStock().getTerminalTile(Color.RED, 2), true);
 		add("Place it here", grid.getCenterNeightboursCoord(4), false);
-		add("Go on and complete core. I'll be back once you've finished", 0, 0);
+		add("Go on and complete the core. I'll be back once you've finished", 0, 0);
 		add("Core is complete. Fastest player is the first to choose the new tile.", core);
-		add("These are the circuit tiles. Some of them contains a logic gate, like this one.",
+		add("These are the circuit tiles. Some of them contain logic gates, like this one.",
 				tileMarket.getPosition(0), true);
 		add("The slower player will choose the remaining one. This one has only wires in it.",
 				tileMarket.getPosition(1), true);
-		add("You can rotate the tile using mouse wheel or SPACEBAR and CTRL before placing it.",
+		add("You can rotate the tile using the mouse wheel or SPACEBAR and CTRL before placing it.",
 				grid.neightbour(grid.neightbourCell(grid.neightbourCell(grid.getCenter(), 3), 3), 3), false);
-		add("Each new tile have to be placed near one of the previous tiles.",
+		add("Each new tile has to be placed near one of the previous tiles.",
 				grid.neightbour(grid.neightbourCell(grid.getCenter(), 3), 3), false);
 		add("Rotate tile to connect this logic gate to the core.",
 				grid.neightbour(grid.neightbourCell(grid.getCenter(), 4), 4), false, 120);
-		add("Whenever you connect a logic gate to a terminal the owner of that terminal get rid of some charge", 150,
+		add("Whenever you connect a logic gate to a terminal the owner of that terminal gets rid of some charge", 150,
 				100, true);
 		add("In this case, because it is a NORMAL terminal, two charges are disposed.", 150, 100);
 		add("A SLOW terminal will drop 1 charge, a FAST terminal will drop 3 charges.", 150, 100);
 		add("Dropping charges is good, but attaching gates to terminal slow them down", 25, 150);
 		add("You can keep track of the speed of your terminals reading the numbers in the small squares", 25, 150);
-		add("Each logic gate in serie will delay your terminal. Understood? You will with practice", 25, 150);
+		add("Each logic gate in series will delay your terminal. Understood? You will with practice", 25, 150);
 		add("If you followed my advice, now red player should be the fastest. Draw tiles.", core);
 		add("BUFFERs are the simplest logic gates. The input value...", tileMarket.getPosition(0).x,
 				tileMarket.getPosition(0).y + 100, true);
@@ -97,8 +97,8 @@ public class Helper {
 				tileMarket.getPosition(0).y - 100, true);
 		add("So INPUT 0, OUTPUT 0", tileMarket.getPosition(0), true);
 		add("INPUT 1, OUTPUT 1", tileMarket.getPosition(1), true);
-		add("This super cool tile is called the POWER SOLDERER: who own it will place its tile first", 250, 50);
-		add("When you own the POWER SOLDERER you can always yield it to the next player...", 180, 50);
+		add("This super cool tile is called the POWER SOLDERER: who has it will place its tile first", 250, 50);
+		add("When you have the POWER SOLDERER you can always yield it to the next player...", 180, 50);
 		add("...and let him place first. But he won't be able to do the same!", 180, 100);
 		add("You can also connect numbers to the circuits...",
 				grid.neightbour(grid.neightbourCell(grid.getCenter(), 2), 2), false, 0);
@@ -116,12 +116,12 @@ public class Helper {
 				grid.neightbour(grid.neightbourCell(grid.neightbourCell(grid.getCenter(), 2), 2), 2), false);
 		add("Now rotate the tile and place it in a polite way. Please.",
 				grid.neightbour(grid.neightbourCell(grid.getCenter(), 2), 2), false, 300);
-		add("Whenever you are tired, you can always right click and get rest in the main menu", core);
+		add("Whenever you are tired, you can always right click and take a break in the main menu", core);
 		add("Probably you're wondering: why should I do all that?", core);
 		add("I'll tell you a secret: each player has a secret objective...", core);
-		add("And, in your turn, you can discover yours clicking on the big square", 75, 50);
+		add("And, during your turn, you can discover yours clicking on the big square", 75, 50);
 		add("If you flip these tiles...", tileMarket.getPosition(0), true);
-		add("...you will discover whether you have to bring 0 or 1 to your terminals.", tileMarket.getPosition(1),
+		add("...you will discover whether you have to get a 0 or 1 to your terminals.", tileMarket.getPosition(1),
 				true);
 		add("It's a matter of associating colors, letters and numbers: guess...Fast1, Norm1, Slow1",
 				tileMarket.getPosition(0), true);
@@ -146,25 +146,25 @@ public class Helper {
 				: main.getPlayerController().getPlayerByColor(Color.GREEN));
 		Player pOther = (testC ? main.getPlayerController().getPlayerByColor(Color.GREEN)
 				: main.getPlayerController().getPlayerByColor(Color.RED));
-		add("He is not obliged, but if he wants to he must click on his led. Just do it.", pDisc.getSwitch().getPos(),true);
+		add("He doesn't have to, but if he wants to he must click on his LED. Just do it.", pDisc.getSwitch().getPos(),true);
 		add("The other player may refuse. If he does, he will loose the Power Solderer...", pDisc.getSwitch().getPos(),true);
 		add("...and if he doesn't have it he will get one extra charge.", pDisc.getSwitch().getPos(),true);
-		add("To refuse he just need to click on core", core);
+		add("To refuse he just needs to click on the core", core);
 		add("Add a couple more tiles", 0, 0);
-		add("This time we will turn on circuit.", pDisc.getSwitch().getPos(),true);
+		add("This time we will turn on the circuit.", pDisc.getSwitch().getPos(),true);
 		add("The other player accept, but he's giving 1/3 of his remaining charge to the opponent as points",
 				pOther.getSwitch().getPos(),true);
 		add("Everything's ready! Signals are entering the circuit and moving to the core", pFinal, true);
-		add("If a logic gate has collected all its input it can be overcame.", pFinal, true);
+		add("If a logic gate has collected all its input it can be overcome.", pFinal, true);
 		add("On each click signals try to move to the next logic gate...", pFinal, true);
-		add("...and signals gain strenght!", pFinal, true);
+		add("...and signals gain strength!", pFinal, true);
 		add("When a signal reaches a terminal it is processed: ", pFinal, true);
-		add("If signal value is correct, according to the secret project, terminal owner scores the signal strength",
+		add("If the signal value is correct, according to the secret project, the terminal owner scores the signal strength",
 				pFinal, true);
-		add("If a signal reaches the core, all other signals will loose strenght...", pFinal, true);
+		add("If a signal reaches the core, all other signals will loose strength...", pFinal, true);
 		add("...so try to reach the core just before your opponent!", pFinal, true);
 		add("When all terminal have processed a signal finally we'll have a winner", pFinal, true);
-		add("and in case of a draw, victory will be with the POWER SOLDERER.", pFinal, true);
+		add("and in case of a draw, victory will be with for the POWER SOLDERER.", pFinal, true);
 		add("That's the end of the track. Thanks for your patience and enjoy ROOT\\G:!", core);
 	}
 
