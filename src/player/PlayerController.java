@@ -27,6 +27,7 @@ public class PlayerController {
 	private boolean refresh = true;
 	private BufferedImage hCopy;
 
+	// CONSTRUCTORS
 	public PlayerController(Main main) {
 		this.main = main;
 		players = new ArrayList<Player>();
@@ -37,7 +38,75 @@ public class PlayerController {
 		activePlayer = null;
 		hCopy = new BufferedImage(200, 500, BufferedImage.TYPE_INT_ARGB);
 	}
+	// GETTERS&SETTERS
 
+	public void setPowerSolder(Player p) {
+		for (Player player : players) {
+			player.setPowerSolder(player == p);
+		}
+	}
+
+	public Rectangle getPowerSolderClickArea() {
+		return huds.get(players.indexOf(activePlayer)).getPowerSolderClickArea();
+	}
+
+	// return project square click area
+	public Rectangle getActivePlayerClickArea() {
+		if (activePlayer != null)
+			return huds.get(players.indexOf(activePlayer)).getClickArea();
+		return new Rectangle();
+	}
+
+	public int getNumberOfPlayer() {
+		return players.size();
+	}
+
+	public Player getActivePlayer() {
+		return activePlayer;
+	}
+
+	public Player getPlayerByColor(Color color) {
+		for (Player p : players)
+			if (p.getColor() == color)
+				return p;
+		return null;
+	}
+
+	// return fist player with no charges
+	public boolean getFirstDischarged(boolean begin) {
+		if (!anyDischarged())
+			return false;
+		if (begin)
+			placementOrder = (ArrayList<Player>) lastPlacementOrder.clone();
+		for (int i = 0; i < players.size(); i++)
+			if (nextSwitchPlayer()) {
+				if (activePlayer.getChargeTokens() == 0) {
+					refresh = true;
+					return true;
+				}
+			} else
+				return false;
+		return false;
+	}
+
+	// METHODS
+
+	// drop pending charges for all players
+	public void discharge() {
+		for (Player p : players)
+			p.discharge();
+		refresh = true;
+	}
+
+	// prepare color list
+	public void addColor(Color color) {
+		colorList.add(color);
+		main.setMessage("Player " + Integer.toString(colorList.size() + 1) + ", select your color");
+		if (colorList.size() == 2)
+			main.addMessage(" or click on table to start a 2P match");
+	}
+
+	// initialize
 	public void createPlayerList(Main main, boolean def) {
 		/*
 		 * Integer[] options = { 2, 3 }; ArrayList<Color> colors = new
@@ -66,16 +135,77 @@ public class PlayerController {
 			}
 		for (Player p : players)
 			huds.add(new HUD(p, main));
-		assignProject();
+		assignProject(main.getHelper().isActive());
 		setPowerSolder(players.get(0));
 		nextPlayerChoose();
 	}
 
+	// ORDER MANAGEMENT
+	public Player nextPlayerChoose() {
+		if (main.getTc().coreReady())
+			main.getTc().calcDelays(this);
+		if (chooseOrder.size() == 0)
+			makeOrder();
+		activePlayer = chooseOrder.get(0);
+		chooseOrder.remove(activePlayer);
+		hudsOrder = lastChooseOrder;
+		refresh = true;
+		return activePlayer;
+	}
+
+	public Player nextPlayerPlace() {
+		if (endOfTurn())
+			return null;
+		if (main.getTc().coreReady())
+			main.getTc().calcDelays(this);
+		activePlayer = placementOrder.get(0);
+		placementOrder.remove(activePlayer);
+		skips--;
+		refresh = true;
+		return activePlayer;
+	}
+
+	public boolean nextSwitchPlayer() {
+		if (placementOrder.size() == 0) {
+			if (anySwitchOn()) {
+				for (Player p : players)
+					if (!p.getSwitch().isOn()) {
+						activePlayer = p;
+						refresh = true;
+						return true;
+					}
+			}
+			return false;
+		}
+		activePlayer = placementOrder.get(0);
+		placementOrder.remove(activePlayer);
+		refresh = true;
+		return true;
+	}
+
+	public boolean skip() {
+		if (skips <= 0)
+			return false;
+		placementOrder.add(activePlayer);
+		lastPlacementOrder = (ArrayList<Player>) placementOrder.clone();
+		activePlayer.setTile(main.getActiveTile());
+		nextPlayerPlace();
+		setPowerSolder(activePlayer);
+		refresh = true;
+		return true;
+	}
+
+	public boolean endOfTurn() {
+		return placementOrder.size() == 0;
+	}
+
+	// order players
 	private void makeOrder() {
 		chooseOrder = (ArrayList<Player>) players.clone();
-		Collections.sort(chooseOrder);
+		Collections.sort(chooseOrder); // choose order is delay based
 		placementOrder = (ArrayList<Player>) players.clone();
-		if (main.getTc().coreReady()) {
+		if (main.getTc().coreReady()) { // rotate placement order to put PS on
+										// top
 			for (Player p : players) {
 				if (p.hasPowerSolder())
 					break;
@@ -91,112 +221,12 @@ public class PlayerController {
 		skips = players.size();
 	}
 
-	public void nextPlayerChoose() {
-		if (main.getTc().coreReady())
-			main.getTc().calcDelays(this);
-		if (chooseOrder.size() == 0)
-			makeOrder();
-		activePlayer = chooseOrder.get(0);
-		chooseOrder.remove(activePlayer);
-		hudsOrder = lastChooseOrder;
-		refresh = true;
-	}
-
-	public void nextPlayerPlace() {
-		if (main.getTc().coreReady())
-			main.getTc().calcDelays(this);
-		activePlayer = placementOrder.get(0);
-		placementOrder.remove(activePlayer);
-		skips--;
-		refresh = true;
-	}
-
-	public boolean endOfTurn() {
-		return placementOrder.size() == 0;
-	}
-
-	public boolean skip() {
-		if (skips <= 0)
-			return false;
-		placementOrder.add(activePlayer);
-		lastPlacementOrder = (ArrayList<Player>) placementOrder.clone();
-		activePlayer.setTile(main.getActiveTile());
-		nextPlayerPlace();
-		setPowerSolder(activePlayer);
-		refresh = true;
-		return true;
-	}
-
-	public void setPowerSolder(Player p) {
-		for (Player player : players) {
-			player.setPowerSolder(player == p);
-		}
-	}
-
-	public Rectangle getPowerSolderClickArea() {
-		return huds.get(players.indexOf(activePlayer)).getPowerSolderClickArea();
-	}
-
-	public int getNumberOfPlayer() {
-		return players.size();
-	}
-
-	public Player getActivePlayer() {
-		return activePlayer;
-	}
-
-	public Player getPlayerByColor(Color color) {
-		for (Player p : players)
-			if (p.getColor() == color)
-				return p;
-		return null;
-	}
-
-	/*
-	 * private void tick() { chooseOrder.get(0).tick(); }
-	 */
-	public void render(Graphics2D g2d) {
-		if (refresh) {
-			refresh = false;
-			hCopy = new BufferedImage(200, 500, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = (Graphics2D) hCopy.getGraphics();
-			for (int i = 0; i < hudsOrder.size(); i++) {
-				Player p = hudsOrder.get(i);
-				HUD h = huds.get(players.indexOf(p));
-				h.setSize(p == activePlayer ? 1.4 : 1);
-				h.setYPos(i * 65 + 30);
-				h.render(g);
-			}
+	private void assignProject(boolean def) {
+		if (def) {// PROJECTS for tutorial
 			for (Player p : players) {
-				Switch s = p.getSwitch();
-				s.setxPos(players.indexOf(p) * 50 + 30);
-				s.setyPos(players.size() * 65 + 30);
-				s.render(g);
-			}
-
-		}
-		g2d.drawImage(hCopy, 0, 0, null);
-	}
-
-	public void discharge() {
-		for (Player p : players)
-			p.discharge();
-		refresh = true;
-	}
-
-	public void addColor(Color color) {
-		colorList.add(color);
-		main.setMessage("Player " + Integer.toString(colorList.size() + 1) + ", select your color");
-		if (colorList.size() == 2)
-			main.addMessage(" or click on table to start a 2P match");
-	}
-
-	private void assignProject() {
-		if(main.getHelper().isActive()){
-			for (Player p:players){
-				if(p.getColor()==Color.RED)
+				if (p.getColor() == Color.RED)
 					p.setProject(new ProjectTile0(3, main), new ProjectTile1(1, main));
-				else if(p.getColor()==Color.GREEN)
+				else if (p.getColor() == Color.GREEN)
 					p.setProject(new ProjectTile0(4, main), new ProjectTile1(2, main));
 			}
 			return;
@@ -225,10 +255,25 @@ public class PlayerController {
 			players.get(i).setProject(p0.get(i), p1.get(i));
 	}
 
-	public Rectangle getActivePlayerClickArea() {
-		if (activePlayer != null)
-			return huds.get(players.indexOf(activePlayer)).getClickArea();
-		return new Rectangle();
+	public void calcWinner() {
+		for (Player p : players)
+			p.setScore(p.getChargeTokens() * 2 + (p.hasPowerSolder() ? 1 : 0));
+		makeOrder();
+		hudsOrder = chooseOrder;
+		activePlayer = (chooseOrder.get(0));
+		Color color = activePlayer.getColor();
+		main.setMessage(
+				(color == Color.RED ? "Red" : (color == Color.GREEN ? "Green" : "Blue")) + " player is the winner!");
+		refresh = true;
+	}
+
+	// Charge and switches checking
+	public boolean anyDischarged() {
+		for (Player p : players)
+			if (p.getChargeTokens() == 0)
+				return true;
+		return false;
+
 	}
 
 	public boolean anySwitchOn() {
@@ -250,42 +295,6 @@ public class PlayerController {
 			p.getSwitch().setOn(on);
 	}
 
-	public void setRefresh() {
-		refresh = true;
-	}
-
-	public boolean getFirstUncharged(boolean begin) {
-		if (begin)
-			placementOrder = (ArrayList<Player>) lastPlacementOrder.clone();
-		for (int i = 0; i < players.size(); i++)
-			if (nextSwitchPlayer()) {
-				if (activePlayer.getChargeTokens() == 0) {
-					refresh = true;
-					return true;
-				}
-			} else
-				return false;
-		return false;
-	}
-
-	public boolean nextSwitchPlayer() {
-		if (placementOrder.size() == 0) {
-			if (anySwitchOn()) {
-				for (Player p : players)
-					if (!p.getSwitch().isOn()) {
-						activePlayer = p;
-						refresh = true;
-						return true;
-					}
-			}
-			return false;
-		}
-		activePlayer = placementOrder.get(0);
-		placementOrder.remove(activePlayer);
-		refresh = true;
-		return true;
-	}
-
 	public void penalty() {
 		if (activePlayer.hasPowerSolder()) {
 			activePlayer.setPowerSolder(false);
@@ -296,6 +305,11 @@ public class PlayerController {
 		refresh = true;
 	}
 
+	public void setRefresh() {
+		refresh = true;
+	}
+
+	//distribute remaining charge after switch on circuit.
 	public void chargeDistrib() {
 		int chargePot = 0;
 		int dischargedPlayers = 0;
@@ -315,22 +329,26 @@ public class PlayerController {
 		refresh = true;
 	}
 
-	public void setWinner(){
-		for(Player p:players)
-			p.setScore(p.getChargeTokens()*2+(p.hasPowerSolder()?1:0));
-		makeOrder();
-		hudsOrder=chooseOrder;
-		activePlayer=(chooseOrder.get(0));
-		Color color=activePlayer.getColor();
-		main.setMessage((color==Color.RED?"Red":(color==Color.GREEN?"Green":"Blue"))+" player is the winner!");
-		refresh=true;
+	public void render(Graphics2D g2d) {
+		if (refresh) {
+			refresh = false;
+			hCopy = new BufferedImage(200, 500, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D g = (Graphics2D) hCopy.getGraphics();
+			for (int i = 0; i < hudsOrder.size(); i++) {
+				Player p = hudsOrder.get(i);
+				HUD h = huds.get(players.indexOf(p));
+				h.setSize(p == activePlayer ? 1.4 : 1);
+				h.setYPos(i * 65 + 30);
+				h.render(g);
+			}
+			for (Player p : players) {
+				Switch s = p.getSwitch();
+				s.setxPos(players.indexOf(p) * 50 + 30);
+				s.setyPos(players.size() * 65 + 30);
+				s.render(g);
+			}
+		}
+		g2d.drawImage(hCopy, 0, 0, null);
 	}
-	
-	public boolean anyDischarged(){
-		for(Player p:players)
-			if (p.getChargeTokens()==0)
-				return true;
-		return false;
 
-	}
 }

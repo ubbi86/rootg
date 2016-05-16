@@ -129,7 +129,7 @@ public class Helper {
 		add("Place your tile here.", grid.neightbour(grid.neightbourCell(grid.getCenter(), 0), 0), false);
 		add("Try to place some tiles and discharge completely one player. I'll be back then", 0, 0);
 		add("A player is now able to turn on circuit and end the match", grid.getCenterNeightboursCoord(4), false);
-
+		if (!active) return;
 		nextStep();
 	}
 

@@ -195,7 +195,7 @@ public class StateController {
 					main.getHelper().setDischarged(false);
 					main.setState(GameState.DRAW);
 				} else {
-					if (pc.getFirstUncharged(false)) {
+					if (pc.getFirstDischarged(false)) {
 						main.setMessage("Do you want to turn circuit on? (click on pile or core to pass)");
 						main.setState(GameState.SWITCH_SELECT);
 					} else {
@@ -212,7 +212,7 @@ public class StateController {
 			sc.moveSparks();
 			if (sc.allProcessed()) {
 				main.setState(GameState.ENDGAME);
-				pc.setWinner();
+				pc.calcWinner();
 			} else
 				main.setMessage("Keep the beat and rock around the clock!");
 			break;
@@ -226,7 +226,7 @@ public class StateController {
 
 	private void nextPlayer() {
 		if (pc.endOfTurn()) {
-			if (pc.getFirstUncharged(true)) {
+			if (pc.getFirstDischarged(true)) {
 				main.getHelper().setDischarged(true);
 				main.getHelper().last();
 				main.setMessage("Do you want to turn circuit on? (click on pile or core to pass)");
