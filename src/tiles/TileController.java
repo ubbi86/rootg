@@ -108,7 +108,8 @@ public class TileController extends ArrayList<Tile> {
 	}
 
 	public void render(Graphics2D g2d) {
-		g2d.drawImage(main.getTexture().getTilesDump(),0,0,null);
+		g2d.drawImage(main.getTexture().getTilesDump(0), 0, 0, null);
+		g2d.drawImage(main.getTexture().getTilesDump(1), 0, 0, null);
 		for (int i = 0; i < size(); i++)
 			if (refresh.get(i))
 				get(i).renderShadow(g2d);
@@ -121,8 +122,10 @@ public class TileController extends ArrayList<Tile> {
 		boolean ans = false;
 		for (int i = 0; i < size(); i++) {
 			boolean upd = get(i).tick();
-			if (!upd&refresh.get(i))
-				get(i).render((Graphics2D) main.getTexture().getTilesDump().getGraphics());
+			if (!upd & refresh.get(i)) {
+				get(i).renderShadow((Graphics2D) main.getTexture().getTilesDump(0).getGraphics());
+				get(i).render((Graphics2D) main.getTexture().getTilesDump(1).getGraphics());
+			}
 			ans |= upd;
 			refresh.set(i, upd);
 		}
@@ -143,11 +146,10 @@ public class TileController extends ArrayList<Tile> {
 
 	public Tile getFacingTile(Tile t, int side) {
 		Point p = main.getGrid().neightbours(t.getCell())[side];
-		try{
+		try {
 			Tile outTile = placedTiles[p.x][p.y];
 			return outTile;
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			return null;
 		}
 		// if (outTile==null){

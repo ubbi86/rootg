@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Users\U\Dropbox\Home-Work tunnel\ROOTG\MainROOTG.jar</jar>
-  <outfile>C:\Users\U\Dropbox\Home-Work tunnel\ROOTG\ROOTG.exe</outfile>
+  <jar>C:\Users\U\Documents\2016\rootg\MainROOTG.jar</jar>
+  <outfile>C:\Users\U\Documents\2016\rootg\ROOTG.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -12,7 +12,7 @@
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
   <manifest></manifest>
-  <icon>C:\Users\U\Dropbox\Home-Work tunnel\ROOTG\rootg.ico</icon>
+  <icon>C:\Users\U\Documents\2016\rootg\rootg.ico</icon>
   <jre>
     <path></path>
     <minVersion>1.5.0</minVersion>

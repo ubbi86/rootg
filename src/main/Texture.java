@@ -17,7 +17,7 @@ public class Texture {
 	private BufferedImage[] shadow = new BufferedImage[2];
 	private BufferedImage extraTex;
 	private BufferedImage marketDump;
-	private BufferedImage tilesDump;
+	private BufferedImage[] tilesDump= new BufferedImage[2];
 	
 	private static final int HEIGHT = 1344;
 	private static final int WIDTH = 1088;
@@ -102,8 +102,8 @@ public class Texture {
 		this.marketDump = marketDump;
 	}
 	
-	public BufferedImage getTilesDump() {
-		return tilesDump;
+	public BufferedImage getTilesDump(int i) {
+		return tilesDump[i];
 	}
 
 	public void setTilesDump(BufferedImage marketDump) {
@@ -145,8 +145,9 @@ public class Texture {
 	}
 	
 	public void clearDump(Main main) {
-		tilesDump=new BufferedImage(main.WIDTH*2, main.HEIGHT*3, BufferedImage.TYPE_INT_ARGB);
-		tilesDump.getGraphics().translate(main.getxCam(), main.getyCam());
+		for (int i=0;i<tilesDump.length; i++)
+		tilesDump[i]=new BufferedImage(main.WIDTH*2, main.HEIGHT*3, BufferedImage.TYPE_INT_ARGB);
+
 	}
 
 }

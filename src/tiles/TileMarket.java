@@ -49,6 +49,7 @@ public class TileMarket extends ArrayList<Tile>{
 		int stepY = (int) (Main.HEIGHT / 3 / (Math.ceil(size() / 3.) + 1.));
 		for (int i = 0; i < size(); i++)
 			get(i).setPos(new Point((i % 3 + 1) * stepX, (int) (Main.HEIGHT / 3 + (i / 3 + 1) * stepY)));
+		refresh=true;
 	}
 
 	public boolean tick() {
