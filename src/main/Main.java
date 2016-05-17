@@ -143,6 +143,8 @@ public class Main extends Canvas implements Runnable {
 
 	public void setState(GameState state) {
 		this.state = state;
+		if(state==GameState.SELECT_SIDE||state==GameState.SELECT_PLAYERS||state==GameState.MARKET||state==GameState.PROJECT)
+			mainTileMarket.setRefresh();
 		for (int i=0;i<2;i++)
 			setRefresh(i);
 	}
