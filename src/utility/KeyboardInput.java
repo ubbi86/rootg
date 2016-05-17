@@ -77,8 +77,8 @@ public class KeyboardInput implements KeyListener {
 				main.getActiveTile().rotate(-1);
 				break;
 		}
-		
-		main.setRefresh();
+
+		main.setRefresh(0);
 	}
 
 }

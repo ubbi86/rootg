@@ -48,10 +48,10 @@ public class HelperCursor extends Spark {
 	}
 
 	@Override
-	public void tick() {
+	public boolean tick() {
 		if (super.getTile() != null)
 			setPos(super.getTile());
-		super.tick();
+		return super.tick();
 	}
 
 	public void render(Graphics2D g2d) {

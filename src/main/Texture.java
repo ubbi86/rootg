@@ -17,7 +17,8 @@ public class Texture {
 	private BufferedImage[] shadow = new BufferedImage[2];
 	private BufferedImage extraTex;
 	private BufferedImage marketDump;
-
+	private BufferedImage tilesDump;
+	
 	private static final int HEIGHT = 1344;
 	private static final int WIDTH = 1088;
 	public static final int ROWS = 9;
@@ -26,6 +27,7 @@ public class Texture {
 	public static final int TILEWIDTH = 136;
 
 	// CONSTRUCTORS
+
 	public Texture() {
 		try {
 			background = ImageIO.read(getClass().getResourceAsStream("/background.jpg"));
@@ -35,11 +37,11 @@ public class Texture {
 			}
 			extraTex = ImageIO.read(getClass().getResourceAsStream("/extra.png"));
 			createShadows();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
 	// GETTERS&SETTERS
 	public BufferedImage getTile(int col, int row) {
 		return getTile(col, row, Side.FRONT);
@@ -99,6 +101,14 @@ public class Texture {
 	public void setMarketDump(BufferedImage marketDump) {
 		this.marketDump = marketDump;
 	}
+	
+	public BufferedImage getTilesDump() {
+		return tilesDump;
+	}
+
+	public void setTilesDump(BufferedImage marketDump) {
+		this.tilesDump = tilesDump;
+	}
 
 	// METHODS
 	/*
@@ -132,6 +142,11 @@ public class Texture {
 		}
 		shadow[0] = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		shadow[0].setRGB(0, 0, width, height, imagePixels, 0, width);
+	}
+	
+	public void clearDump(Main main) {
+		tilesDump=new BufferedImage(main.WIDTH*2, main.HEIGHT*3, BufferedImage.TYPE_INT_ARGB);
+		tilesDump.getGraphics().translate(main.getxCam(), main.getyCam());
 	}
 
 }

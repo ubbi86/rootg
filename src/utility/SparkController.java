@@ -292,13 +292,15 @@ public class SparkController extends ArrayList<Spark> {
 		main.getPlayerController().setRefresh();
 	}
 
-	public void tick() {
+	public boolean tick() {
+		boolean ans=false;
 		for (int i = 0; i < size(); i++) {
 			Spark s = get(i);
-			s.tick();
+			ans|=s.tick();
 			if (s.remove())
 				remove(s);
 		}
+		return ans;
 	}
 
 	public void render(Graphics2D g2d) {

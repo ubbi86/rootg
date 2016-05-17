@@ -10,6 +10,7 @@ import java.util.Random;
 import main.Main;
 import main.Texture;
 
+@SuppressWarnings("serial")
 public class TileStack extends ArrayList<Tile>{
 	private static final int[] defaultStack = {27, 29, 37, 44, 53, 43, 46, 35, 50, 65, 62, 36, 59};
 	private int lastSpecialTile = 19;
@@ -18,12 +19,13 @@ public class TileStack extends ArrayList<Tile>{
 
 	public TileStack(Main main) {
 		this.main=main;
-		makeStack();
+		makeStack(main.getHelper().isActive());
 	}
 	public void makeStack(){
 		makeStack(false);
 	}
 	public void makeStack(boolean notRandom){
+		System.out.println("K");
 		ArrayList<Integer> rndArray = new ArrayList<Integer>();
 		if (notRandom)
 			for (int i:defaultStack)

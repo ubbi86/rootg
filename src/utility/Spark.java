@@ -122,11 +122,11 @@ public class Spark implements Cloneable {
 		return (Spark) super.clone();
 	}
 
-	public void tick() {
+	public boolean tick() {
 		boolean ans = false;
 		if (trajectory.size() == 0) {
 			remove = toBeRemoved;
-			return;
+			return false;
 		}
 		Point target = trajectory.get(0);
 		double distX = target.getX() - renderPos.getX();
@@ -143,6 +143,7 @@ public class Spark implements Cloneable {
 		renderPos.setLocation(newX, newY);
 		if (renderPos.getX() == target.getX() && renderPos.getY() == target.getY())
 			trajectory.remove(0);
+		return true;
 	}
 
 	public void render(Graphics2D g2d) {

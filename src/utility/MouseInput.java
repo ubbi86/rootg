@@ -54,7 +54,7 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 	public void mouseMoved(MouseEvent e) {
 		moveActiveTile(e.getPoint());
 		menuHighlight(e.getPoint());
-		}
+	}
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent wheelEvent) {
@@ -83,7 +83,7 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 			main.addXCam((int) (e.getX() - startDrag.getX()));
 			main.addYCam((int) (e.getY() - startDrag.getY()));
 			startDrag = e.getPoint();
-			main.setRefresh();
+			main.setRefresh(0);
 		}
 
 		if (rightClick) {
@@ -91,7 +91,7 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 			double y = e.getY();
 			main.addZoom((y0 - y) / y0 + 1);
 			startDrag = e.getPoint();
-			main.setRefresh();
+			main.setRefresh(0);
 
 		}
 		moveActiveTile(e.getPoint());
@@ -102,8 +102,8 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 		if (activeTile != null)
 			activeTile.setPos(new Point((int) (p.getX() / main.getZoom()), (int) (p.getY() / main.getZoom())));
 	}
-	
-	private void menuHighlight(Point p){
+
+	private void menuHighlight(Point p) {
 		if (main.getState() == GameState.MENU)
 			main.getMenu().setHighlight(p);
 	}

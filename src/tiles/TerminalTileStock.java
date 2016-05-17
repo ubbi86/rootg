@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import main.Main;
 
+@SuppressWarnings("serial")
 public class TerminalTileStock extends ArrayList<TerminalTile>{
 	//CONSTRUCTORS
 	public TerminalTileStock(Main main) {

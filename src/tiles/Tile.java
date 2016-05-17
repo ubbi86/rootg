@@ -216,9 +216,9 @@ public class Tile extends BasicTile implements Cloneable {
 		if (dropping && size > 1 && this != activeTile) {
 			ans = true;
 			double targetSize = (this != activeTile ? 1 : 1.2);
-			double dropspeed = (size - targetSize) / 4;
+			double dropspeed = (size - targetSize) / 5;
 			size -= dropspeed;
-			if (size - targetSize < 0.1)
+			if (size - targetSize < 0.05)
 				size = targetSize;
 		}
 		

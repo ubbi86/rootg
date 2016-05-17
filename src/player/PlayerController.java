@@ -13,7 +13,7 @@ import main.Main;
 import tiles.ProjectTile0;
 import tiles.ProjectTile1;
 
-public class PlayerController extends ArrayList<Player>{
+public class PlayerController extends ArrayList<Player> {
 	private ArrayList<Player> chooseOrder;
 	private ArrayList<Player> placementOrder;
 	private ArrayList<Player> lastPlacementOrder;
@@ -203,9 +203,9 @@ public class PlayerController extends ArrayList<Player>{
 
 	// order players
 	private void makeOrder() {
-		chooseOrder = (ArrayList<Player>)super.clone();
+		chooseOrder = (ArrayList<Player>) super.clone();
 		Collections.sort(chooseOrder); // choose order is delay based
-		placementOrder = (ArrayList<Player>)super.clone();
+		placementOrder = (ArrayList<Player>) super.clone();
 		if (main.getTc().coreReady()) { // rotate placement order to put PS on
 										// top
 			for (Player p : this) {
@@ -300,8 +300,7 @@ public class PlayerController extends ArrayList<Player>{
 	public void penalty() {
 		if (activePlayer.hasPowerSolder()) {
 			activePlayer.setPowerSolder(false);
-			lastPlacementOrder.get(((lastPlacementOrder.indexOf(activePlayer) + 1) % size()))
-					.setPowerSolder(true);
+			lastPlacementOrder.get(((lastPlacementOrder.indexOf(activePlayer) + 1) % size())).setPowerSolder(true);
 		} else
 			activePlayer.addCharge(1);
 		setSwitches(false);
@@ -312,17 +311,19 @@ public class PlayerController extends ArrayList<Player>{
 		refresh = true;
 	}
 
-	//distribute remaining charge after switch on circuit.
+	// distribute remaining charge after switch on circuit.
 	public void chargeDistrib() {
 		int chargePot = 0;
-		int dischargedPlayers = 0;
-		for (Player p : this) {
-			chargePot += p.getChargeTokens();
-			if (p.getChargeTokens() == 0)
-				dischargedPlayers++;
+		if (anyDischarged()) {
+			int dischargedPlayers = 0;
+			for (Player p : this) {
+				chargePot += p.getChargeTokens();
+				if (p.getChargeTokens() == 0)
+					dischargedPlayers++;
+			}
+			chargePot /= 3;
+			chargePot /= dischargedPlayers;
 		}
-		chargePot /= 3;
-		chargePot /= dischargedPlayers;
 		for (Player p : this)
 			if (p.getChargeTokens() == 0)
 				p.setChargeTokens(chargePot);

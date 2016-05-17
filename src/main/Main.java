@@ -42,7 +42,7 @@ public class Main extends Canvas implements Runnable {
 	public final String TITLE = "ROOT\\G:";
 	public static double TILESCALE = 1;
 	public Side side = Side.BACK;
-	
+
 	////////////////////////////////////////////// / ///
 	public boolean debug = false; // <<========
 	////////////////////////////////////////////// \ \\\
@@ -55,8 +55,8 @@ public class Main extends Canvas implements Runnable {
 	boolean running = false;
 	GameState state = GameState.PLACE;
 	private Thread thread;
-	private BufferedImage hCopy;
-	private boolean refresh = true;
+	private BufferedImage[] hCopy = new BufferedImage[2];
+	private boolean[] refresh = { true, true };
 
 	private StateController stateController;
 	private Texture texture;
@@ -93,7 +93,7 @@ public class Main extends Canvas implements Runnable {
 
 	}
 
-	//CONSTRUCTORS
+	// CONSTRUCTORS
 	public Main(boolean debug) {
 		HEIGHT = (int) (1 * Toolkit.getDefaultToolkit().getScreenSize().getHeight());
 		WIDTH = (int) (1 * Toolkit.getDefaultToolkit().getScreenSize().getWidth());
@@ -119,12 +119,12 @@ public class Main extends Canvas implements Runnable {
 	}
 
 	// GETTERS&SETTERS
-	public void setRefresh() {
-		this.refresh = true;
+	public void setRefresh(int layer) {
+		this.refresh[layer] = true;
 	}
-	
-	public void setSide(Side side){
-		this.side=side;
+
+	public void setSide(Side side) {
+		this.side = side;
 		tileStack.setSide(side);
 		termStock.setSide(side);
 	}
@@ -143,6 +143,8 @@ public class Main extends Canvas implements Runnable {
 
 	public void setState(GameState state) {
 		this.state = state;
+		for (int i=0;i<2;i++)
+			setRefresh(i);
 	}
 
 	public PlayerController getPlayerController() {
@@ -172,8 +174,7 @@ public class Main extends Canvas implements Runnable {
 	public void setTileMarket() {
 		if (tc.coreReady()) {
 			mainTileMarket.populate();
-		}
-		else 
+		} else
 			mainTileMarket = getPlayerController().getActivePlayer().getTileMarket();
 		setMessage("Select a tile");
 		setState(GameState.MARKET);
@@ -185,7 +186,7 @@ public class Main extends Canvas implements Runnable {
 
 	public Menu getMenu() {
 		return menu;
-	
+
 	}
 
 	public Helper getHelper() {
@@ -219,13 +220,10 @@ public class Main extends Canvas implements Runnable {
 
 	public void setMessage(String message) {
 		this.message = message;
-		setRefresh();
 	}
 
 	public void addMessage(String string) {
 		message += string;
-		setRefresh();
-	
 	}
 
 	public int getxCam() {
@@ -236,8 +234,8 @@ public class Main extends Canvas implements Runnable {
 		this.xCam += xCam;
 		if (this.xCam < -2 * WIDTH)
 			this.xCam = -2 * WIDTH;
-		if (this.xCam > 0)
-			this.xCam = 0;
+		if (this.xCam > -WIDTH / 2)
+			this.xCam = -WIDTH / 2;
 	}
 
 	public int getyCam() {
@@ -246,8 +244,8 @@ public class Main extends Canvas implements Runnable {
 
 	public void addYCam(int yCam) {
 		this.yCam += yCam;
-		if (this.yCam < -HEIGHT * 5 / 2)
-			this.yCam = -HEIGHT * 5 / 2;
+		if (this.yCam < -HEIGHT * 2)
+			this.yCam = -HEIGHT * 2;
 		if (this.yCam > -HEIGHT)
 			this.yCam = -HEIGHT;
 	}
@@ -264,13 +262,13 @@ public class Main extends Canvas implements Runnable {
 			this.zoom = 0.5;
 	}
 
-	//METHODS
-	
-	//THREAD CONTROL
+	// METHODS
+
+	// THREAD CONTROL
 	private synchronized void start() {
 		if (running)
 			return;
-	
+
 		running = true;
 		thread = new Thread(this);
 		thread.start();
@@ -279,7 +277,7 @@ public class Main extends Canvas implements Runnable {
 	public synchronized void stop() {
 		if (!running)
 			return;
-	
+
 		running = false;
 		System.exit(0);
 		try {
@@ -287,28 +285,28 @@ public class Main extends Canvas implements Runnable {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-	
+
 	}
 
 	private void init() {
 		grid = new HexGrid((int) (66 * TILESCALE));
-		hCopy = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < 2; i++)
+			hCopy[i] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
 		texture = new Texture();
 		intLoader = new InterfaceLoader();
 		coreB = new Tile(8, 1, Side.BACK, this);
 		coreF = new Tile(8, 1, Side.FRONT, this);
-	
+
 		resetControllers();
-	
+
 		menu = new Menu(this);
 		menu.add("Start match");
 		menu.add("Start default match");
 		menu.add("Continue");
 		menu.add("Learn to play");
 		menu.add("Quit");
-	
-		hCopy = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-		hCopy.getGraphics().drawImage(texture.background, 0, 0, WIDTH + 10, HEIGHT + 10, null);
+
+		hCopy[0].getGraphics().drawImage(texture.background, 0, 0, WIDTH + 10, HEIGHT + 10, null);
 		new KeyboardInput(this);
 		new MouseInput(this);
 		setState(GameState.MENU);
@@ -339,7 +337,7 @@ public class Main extends Canvas implements Runnable {
 				frames++;
 			} else
 				try {
-					Thread.sleep((long) ((period - passed)/2));
+					Thread.sleep((long) ((period - passed)));
 				} catch (InterruptedException e) {
 				}
 
@@ -348,20 +346,22 @@ public class Main extends Canvas implements Runnable {
 				FPS = (int) (frames * 1000 / (System.currentTimeMillis() - timer));
 				frames = 0;
 				timer = System.currentTimeMillis();
-//				helper.userTest(stateController);///<<<<<comment this to disable tutorial test
+				// helper.userTest(stateController);///<<<<<comment this to
+				// disable tutorial test
 			}
 		}
 		stop();
 
 	}
-	
-	//GAME OPERATIONS
+
+	// GAME OPERATIONS
 	public void startMatch() {
 		tc.init(debug);
 		pController.createPlayerList(this, debug);
 		mainTileMarket.clear();
 		message = "Click on pile or on core";
-		setRefresh();
+		setRefresh(0);
+		setRefresh(1);
 		setState(GameState.DRAW);
 	}
 
@@ -375,7 +375,7 @@ public class Main extends Canvas implements Runnable {
 	public void colorMarket() {
 		mainTileMarket.clear();
 		message = "Player 1, select your color";
-	
+
 		ArrayList<Tile> terminalTiles = new ArrayList<Tile>();
 		for (int speed = 1; speed < 4; speed++)
 			for (TerminalTile t : termStock.getTerminalTiles(speed)) {
@@ -386,6 +386,10 @@ public class Main extends Canvas implements Runnable {
 	}
 
 	public void resetControllers() {
+		xCam = -3 / 2 * WIDTH;
+		yCam = -2 * HEIGHT;
+		texture.clearDump(this);
+		helper = new Helper(this);
 		tc = new TileController(this);
 		pController = new PlayerController(this);
 		tileStack = new TileStack(this);
@@ -393,10 +397,7 @@ public class Main extends Canvas implements Runnable {
 		sparkController = new SparkController(this);
 		stateController = new StateController(this);
 		mainTileMarket = new TileMarket(this);
-		helper = new Helper(this);
 		setMessage("");
-		xCam = -3 / 2 * WIDTH;
-		yCam = -2 * HEIGHT;
 		InputStream is = Font.class.getResourceAsStream("/cubano.otf");
 		try {
 			font = Font.createFont(Font.TRUETYPE_FONT, is);
@@ -406,35 +407,37 @@ public class Main extends Canvas implements Runnable {
 		helper.init();
 	}
 
-	//TICK
+	// TICK
 	private void tick() {
-		refresh |= tc.tick();
+		refresh[0] |= tc.tick();
+		boolean ans = false;
 		switch (state) {
 		case PLACE:
 			if (activeTile != null)
 				activeTile.tick(false);
 			break;
 		case MARKET:
-			mainTileMarket.tick();
+			ans |= mainTileMarket.tick();
 			break;
 		case SELECT_PLAYERS:
-			mainTileMarket.tick();
+			ans |= mainTileMarket.tick();
 			break;
 		case PROJECT:
-			pController.getActivePlayer().getProjectMarket().tick();
+			ans |= pController.getActivePlayer().getProjectMarket().tick();
 			break;
 		case SCORE:
-			sparkController.tick();
+			ans |= sparkController.tick();
 		case ENDGAME:
-			sparkController.tick();
+			ans |= sparkController.tick();
 		default:
 			break;
 		}
+		refresh[1] |=ans;
 		helper.tick();
 
 	}
 
-	//RENDERING METHODS
+	// RENDERING METHODS
 	private void render() {
 		BufferStrategy bs = this.getBufferStrategy();
 		if (bs == null) {
@@ -448,11 +451,48 @@ public class Main extends Canvas implements Runnable {
 		/////////////////////////////////////
 		// g2d.setColor(Color.WHITE);
 		// g2d.fillRect(0, 0, WIDTH*2, HEIGHT*2);
-		if (refresh) {
-			refresh();
+		for (int i = 0; i < 2; i++){
+			if (refresh[i])
+				refresh(i);
+				g2d.drawImage(hCopy[i], 0, 0, WIDTH, HEIGHT, null);
+			}
+		
+		renderMessage(g2d);
+		renderFPS(g2d);
+		helper.render(g2d);
+
+		if (state == GameState.PLACE) {
+			Tile aTile = activeTile;
+			if (aTile != null) {
+				g2d.scale(zoomTemp, zoomTemp);
+				aTile.renderShadow(g2d);
+				aTile.render(g2d);
+				g2d.scale(1 / zoomTemp, 1 / zoomTemp);
+			}
 		}
-		g2d.drawImage(hCopy, 0, 0, WIDTH, HEIGHT, null);
-		switch (state) {
+		/////////////////////////////////////
+		g2d.dispose();
+		pController.render((Graphics2D) bs.getDrawGraphics());
+		helper.render((Graphics2D) bs.getDrawGraphics());
+		bs.show();
+	}
+
+	private void refresh(int layer) {
+		refresh[layer] = false;
+		hCopy[layer] = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = (Graphics2D) hCopy[layer].getGraphics();
+		switch (layer) {
+		case 0:
+			g2d.translate(WIDTH / 2, HEIGHT / 2);
+			g2d.scale(zoomTemp, zoomTemp);
+			renderBkgn(g2d);
+			g2d.translate(xCamTemp, yCamTemp);
+			tc.render(g2d);
+			tileStack.render(g2d);
+			camEngine(false, g2d);
+			break;
+		case 1:
+			switch (state) {
 		case MENU:
 			menu.render(g2d);
 			break;
@@ -482,36 +522,8 @@ public class Main extends Canvas implements Runnable {
 		default:
 			break;
 		}
-		renderMessage(g2d);
-		renderFPS(g2d);
-
-		if (state == GameState.PLACE) {
-			Tile aTile = activeTile;
-			if (aTile != null) {
-				g2d.scale(zoomTemp, zoomTemp);
-				aTile.renderShadow(g2d);
-				aTile.render(g2d);
-				g2d.scale(1 / zoomTemp, 1 / zoomTemp);
-			}
+			break;
 		}
-		/////////////////////////////////////
-		g2d.dispose();
-		pController.render((Graphics2D) bs.getDrawGraphics());
-		helper.render((Graphics2D) bs.getDrawGraphics());
-		bs.show();
-	}
-
-	private void refresh() {
-		refresh = false;
-		hCopy = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = (Graphics2D) hCopy.getGraphics();
-		g2d.translate(WIDTH / 2, HEIGHT / 2);
-		g2d.scale(zoomTemp, zoomTemp);
-		renderBkgn(g2d);
-		g2d.translate(xCamTemp, yCamTemp);
-		tc.render(g2d);
-		tileStack.render(g2d);
-		camEngine(false, g2d);
 	}
 
 	private void renderMessage(Graphics2D g2d) {

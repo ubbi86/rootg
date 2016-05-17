@@ -20,15 +20,15 @@ public class StateController {
 	PlayerController pc;
 	TileStack ts;
 
-	//CONSTRUCTORS
+	// CONSTRUCTORS
 	public StateController(Main main) {
 		this.main = main;
 		tc = main.getTc();
 		pc = main.getPlayerController();
 		ts = main.getTileStack();
 	}
-	
-	//METHODS
+
+	// METHODS
 	public void nextState(int x, int y) {
 		Point pFrame = new Point(x, y);
 		if (main.getState() != GameState.MENU && main.getHelper().isActive())
@@ -66,11 +66,10 @@ public class StateController {
 
 		case SELECT_SIDE: {
 			Tile t = tileMarket.select(x, y);
-
 			if (t != null) {
 				main.setSide(t.getSide());
 				main.colorMarket();
-				if (main.debug) 
+				if (main.debug)
 					main.startMatch();
 				else
 					main.setState(GameState.SELECT_PLAYERS);
@@ -81,7 +80,7 @@ public class StateController {
 		case SELECT_PLAYERS: {
 			TerminalTile t = (TerminalTile) tileMarket.select(x, y);
 			if (t != null) {
-				Color color=t.getColor();
+				Color color = t.getColor();
 				pc.addColor(color);
 				tileMarket.removeByColor(color);
 				if (tileMarket.isEmpty())
@@ -109,7 +108,7 @@ public class StateController {
 				else
 					main.setMessage("Cannot skip");
 			else if (!ts.getStackPos().contains(p))
-				if (tc.addTile(main.getGrid().nearest(p))) {
+				if (tc.add(main.getGrid().nearest(p))) {
 					if (!tc.coreReady()) {
 						pc.nextPlayerChoose();
 						goToDraw();
@@ -125,11 +124,12 @@ public class StateController {
 					pc.nextPlayerPlace();
 				else if (tileMarket.isEmpty())
 					pc.nextPlayerPlace();
-				else
+				else {
 					pc.nextPlayerChoose();
-					//main.setState(GameState.MARKET);
+					main.setState(GameState.MARKET);
+				}
 			break;
-			
+
 		case PROJECT:
 			Tile t = pc.getActivePlayer().getProjectMarket().select(x, y, false);
 			if (t != null) {
@@ -142,7 +142,7 @@ public class StateController {
 				main.setState(prevState);
 			}
 			break;
-			
+
 		case SWITCH_SELECT:
 			Switch s = pc.getActivePlayer().getSwitch();
 			if (s.getClickArea().contains(pFrame)) {
@@ -169,7 +169,7 @@ public class StateController {
 				}
 			}
 			break;
-			
+
 		case SCORE:
 			SparkController sc = main.getSparkController();
 			sc.moveSparks();
@@ -184,7 +184,6 @@ public class StateController {
 			break;
 		}
 		main.getHelper().pauseConditions();
-		main.setRefresh();
 	}
 
 	public void menu() {

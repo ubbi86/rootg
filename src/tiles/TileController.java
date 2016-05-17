@@ -12,29 +12,32 @@ import player.PlayerController;
 import utility.SparkController;
 import utility.WireChaser;
 
-public class TileController {
+@SuppressWarnings("serial")
+public class TileController extends ArrayList<Tile> {
 	private Tile[][] placedTiles = new Tile[32][32];
-	private ArrayList<Tile> tiles;
 	private Main main;
 	private int tilesOnTable;
+	private ArrayList<Boolean> refresh;
+	private ArrayList<Boolean> dropped;
 	private TerminalTile[] core = new TerminalTile[6];
 
 	public TileController(Main main) {
 		this.main = main;
+		refresh = new ArrayList<Boolean>();
+		dropped = new ArrayList<Boolean>();
 		placedTiles = new Tile[256][256];
-		tiles = new ArrayList<Tile>();
 		tilesOnTable = 0;
 	}
 
 	public void init(boolean def) {
-		Tile coreTile = (main.side==Side.BACK?main.coreB:main.coreF);
+		Tile coreTile = (main.side == Side.BACK ? main.coreB : main.coreF);
 		// Interface[] interfaces = new Interface[6];
 		// for (int i = 0; i < 6; i++) {
 		// interfaces[i] = new Interface(IO.INPUT, Device.CORE);
 		// }
 		// tile.setInterfaces(interfaces);
-		Point center=main.getGrid().getCenter();
-		addTile(coreTile, center);
+		Point center = main.getGrid().getCenter();
+		add(coreTile, center);
 		if (def) {
 			Point[] corePos = new Point[6];
 			corePos = main.getGrid().neightbours(center);
@@ -43,34 +46,36 @@ public class TileController {
 				TerminalTile tile = ts.getTerminalTiles(Color.RED).get(i);
 				tile.rotate(i - (main.side == Side.FRONT ? 2 : 3));
 				tile.flip();
-				addTile(tile, corePos[i]);
+				add(tile, corePos[i]);
 			}
 
 			for (int i = 0; i < 3; i++) {
 				TerminalTile tile = ts.getTerminalTiles(Color.GREEN).get(i);
 				tile.rotate(i + (main.side == Side.FRONT ? 1 : 0));
 				tile.flip();
-				addTile(tile, corePos[i + 3]);
+				add(tile, corePos[i + 3]);
 			}
 		}
 	}
 
-	public boolean addTile(Tile tile, Point cell) {
+	public boolean add(Tile tile, Point cell) {
 		if (tile == null)
 			return false;
 		tile.setCell(cell);
 		placedTiles[cell.x][cell.y] = tile;
-		tiles.add(tile);
+		super.add(tile);
 		if (!coreReady() && tilesOnTable > 0)
 			core[tilesOnTable - 1] = (TerminalTile) tile;
 		tilesOnTable++;
 		if (tilesOnTable == 7)
 			main.getTileMarket().clear();
-		main.setRefresh();
+		main.setRefresh(0);
+		refresh.add(true);
+		refresh.add(false);
 		return true;
 	}
 
-	public boolean addTile(Point cell) {
+	public boolean add(Point cell) {
 		if (main.getActiveTile() == null)
 			return false;
 		Tile activeTile;
@@ -83,7 +88,7 @@ public class TileController {
 				activeTile = null;
 				return false;
 			}
-			if (addTile(activeTile, cell)) {
+			if (add(activeTile, cell)) {
 				main.setActiveTile(null);
 				if (coreReady()) {
 					WireChaser.dischargeTerminals(this, activeTile);
@@ -97,23 +102,30 @@ public class TileController {
 				return true;
 			}
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;
 	}
 
 	public void render(Graphics2D g2d) {
-		for (int i = 0; i < tiles.size(); i++)
-			tiles.get(i).renderShadow(g2d);
-		for (int i = 0; i < tiles.size(); i++)
-			tiles.get(i).render(g2d);
+		g2d.drawImage(main.getTexture().getTilesDump(),0,0,null);
+		for (int i = 0; i < size(); i++)
+			if (refresh.get(i))
+				get(i).renderShadow(g2d);
+		for (int i = 0; i < size(); i++)
+			if (refresh.get(i))
+				get(i).render(g2d);
 	}
 
 	public boolean tick() {
 		boolean ans = false;
-		for (int i = 0; i < tiles.size(); i++)
-			ans |= tiles.get(i).tick();
+		for (int i = 0; i < size(); i++) {
+			boolean upd = get(i).tick();
+			if (!upd&refresh.get(i))
+				get(i).render((Graphics2D) main.getTexture().getTilesDump().getGraphics());
+			ans |= upd;
+			refresh.set(i, upd);
+		}
 		return ans;
 	}
 
@@ -131,11 +143,16 @@ public class TileController {
 
 	public Tile getFacingTile(Tile t, int side) {
 		Point p = main.getGrid().neightbours(t.getCell())[side];
-		Tile outTile = placedTiles[p.x][p.y];
+		try{
+			Tile outTile = placedTiles[p.x][p.y];
+			return outTile;
+		}
+		catch(Exception e){
+			return null;
+		}
 		// if (outTile==null){
 		// System.out.println("["+p.x+", "+p.y+"]");
 		// occupiedCells();}
-		return outTile;
 	}
 
 	public Interface getFacingInterface(Tile t, int side) {
@@ -146,7 +163,7 @@ public class TileController {
 	}
 
 	public Rectangle getCoreClickArea() {
-		return tiles.get(0).getClickArea();
+		return get(0).getClickArea();
 	}
 
 	public boolean isTerminal(Tile t) {
@@ -160,13 +177,11 @@ public class TileController {
 		return tilesOnTable > 6;
 	}
 
-	private void occupiedCells() {
-		for (int i = 0; i < 64; i++)
-			for (int j = 0; j < 64; j++)
-				if (placedTiles[i][j] != null)
-					System.out.print("[" + i + ", " + j + "] ");
-		System.out.println();
-	}
+	/*
+	 * private void occupiedCells() { for (int i = 0; i < 64; i++) for (int j =
+	 * 0; j < 64; j++) if (placedTiles[i][j] != null) System.out.print("[" + i +
+	 * ", " + j + "] "); System.out.println(); }
+	 */
 
 	public void calcDelays(PlayerController pc) {
 		for (TerminalTile tTile : core) {
@@ -259,11 +274,11 @@ public class TileController {
 	}
 
 	public void addSparks(SparkController sc) {
-		for (Tile t : tiles)
+		for (Tile t : this)
 			addSparks(t, sc);
 	}
-	
-	public TerminalTile[] getCore(){
+
+	public TerminalTile[] getCore() {
 		return core;
 	}
 

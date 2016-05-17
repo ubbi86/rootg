@@ -69,15 +69,15 @@ public class TileMarket extends ArrayList<Tile>{
 	public void render(Graphics2D g2d) {
 		if (refresh) {
 			refresh = false;
-			main.getTexture().setMarketDump(
-					new BufferedImage(main.WIDTH, main.HEIGHT, BufferedImage.TYPE_INT_ARGB));
-			Graphics2D g=(Graphics2D)main.getTexture().getMarketDump().getGraphics();
-			g.setColor(new Color(255, 255, 255, 128));
-			g.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
+			//main.getTexture().setMarketDump(
+			//		new BufferedImage(main.WIDTH, main.HEIGHT, BufferedImage.TYPE_INT_ARGB));
+			//Graphics2D g=(Graphics2D)main.getTexture().getMarketDump().getGraphics();
+			g2d.setColor(new Color(255, 255, 255, 128));
+			g2d.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
 			for (int i = 0; i < size(); i++)
-				get(i).render(g);
+				get(i).render(g2d);
 		}
-		g2d.drawImage(main.getTexture().getMarketDump(), 0,0,null);
+		//g2d.drawImage(main.getTexture().getMarketDump(),0,0,null);
 	}
 
 	public Tile select(int x, int y) {
@@ -90,6 +90,7 @@ public class TileMarket extends ArrayList<Tile>{
 				if (remove)
 					remove(t);
 				refresh=true;
+				main.setRefresh(1);
 				t.setSize(1.2);
 				return t;
 			}

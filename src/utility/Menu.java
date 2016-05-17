@@ -28,12 +28,17 @@ public class Menu extends ArrayList<String> {
 
 	// GETTERS&SETTERS
 	public void setHighlight(Point p) {
+		boolean ans=false;
 		int i = select(p);
 		for (int j = 0; j < buttons.size(); j++)
-			if (i == j)
-				highlight.set(j, true);
-			else
-				highlight.set(j, false);
+			if (i == j){
+				ans|=!highlight.get(j);
+				highlight.set(j, true);}
+			else{
+				ans|=highlight.get(j);
+				highlight.set(j, false);}
+		if (ans)
+			main.setRefresh(1);
 	}
 
 	// METHODS
