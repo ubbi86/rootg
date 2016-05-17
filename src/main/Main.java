@@ -143,9 +143,10 @@ public class Main extends Canvas implements Runnable {
 
 	public void setState(GameState state) {
 		this.state = state;
-		if(state==GameState.SELECT_SIDE||state==GameState.SELECT_PLAYERS||state==GameState.MARKET||state==GameState.PROJECT)
+		if (state == GameState.SELECT_SIDE || state == GameState.SELECT_PLAYERS || state == GameState.MARKET
+				|| state == GameState.PROJECT)
 			mainTileMarket.setRefresh();
-		for (int i=0;i<2;i++)
+		for (int i = 0; i < 2; i++)
 			setRefresh(i);
 	}
 
@@ -238,6 +239,8 @@ public class Main extends Canvas implements Runnable {
 			this.xCam = -2 * WIDTH;
 		if (this.xCam > -WIDTH / 2)
 			this.xCam = -WIDTH / 2;
+		if (state == GameState.SCORE || state == GameState.DRAW.ENDGAME)
+			setRefresh(1);
 	}
 
 	public int getyCam() {
@@ -250,6 +253,8 @@ public class Main extends Canvas implements Runnable {
 			this.yCam = -HEIGHT * 2;
 		if (this.yCam > -HEIGHT)
 			this.yCam = -HEIGHT;
+		if (state == GameState.SCORE || state == GameState.DRAW.ENDGAME)
+			setRefresh(1);
 	}
 
 	public double getZoom() {
@@ -262,6 +267,8 @@ public class Main extends Canvas implements Runnable {
 			this.zoom = 2;
 		if (this.zoom < 0.5)
 			this.zoom = 0.5;
+		if (state == GameState.SCORE || state == GameState.DRAW.ENDGAME)
+			setRefresh(1);
 	}
 
 	// METHODS
@@ -435,7 +442,7 @@ public class Main extends Canvas implements Runnable {
 		default:
 			break;
 		}
-		refresh[1] |=ans;
+		refresh[1] |= ans;
 		helper.tick();
 
 	}
@@ -454,12 +461,12 @@ public class Main extends Canvas implements Runnable {
 		/////////////////////////////////////
 		// g2d.setColor(Color.WHITE);
 		// g2d.fillRect(0, 0, WIDTH*2, HEIGHT*2);
-		for (int i = 0; i < 2; i++){
+		for (int i = 0; i < 2; i++) {
 			if (refresh[i])
 				refresh(i);
-				g2d.drawImage(hCopy[i], 0, 0, WIDTH, HEIGHT, null);
-			}
-		
+			g2d.drawImage(hCopy[i], 0, 0, WIDTH, HEIGHT, null);
+		}
+
 		renderMessage(g2d);
 		renderFPS(g2d);
 		helper.render(g2d);
@@ -496,35 +503,35 @@ public class Main extends Canvas implements Runnable {
 			break;
 		case 1:
 			switch (state) {
-		case MENU:
-			menu.render(g2d);
-			break;
-		case MARKET:
-			mainTileMarket.render(g2d);
-			break;
-		case SELECT_SIDE:
-			mainTileMarket.render(g2d);
-			break;
-		case SELECT_PLAYERS:
-			mainTileMarket.render(g2d);
-			break;
-		case PROJECT:
-			pController.getActivePlayer().getProjectMarket().render(g2d);
-			g2d.drawImage(pController.getActivePlayer().getQrProject(), WIDTH - 300, HEIGHT - 300, null);
-			break;
-		case SCORE:
-			camEngine(true, g2d);
-			sparkController.render(g2d);
-			camEngine(false, g2d);
-			break;
-		case ENDGAME:
-			camEngine(true, g2d);
-			sparkController.render(g2d);
-			camEngine(false, g2d);
-			break;
-		default:
-			break;
-		}
+			case MENU:
+				menu.render(g2d);
+				break;
+			case MARKET:
+				mainTileMarket.render(g2d);
+				break;
+			case SELECT_SIDE:
+				mainTileMarket.render(g2d);
+				break;
+			case SELECT_PLAYERS:
+				mainTileMarket.render(g2d);
+				break;
+			case PROJECT:
+				pController.getActivePlayer().getProjectMarket().render(g2d);
+				g2d.drawImage(pController.getActivePlayer().getQrProject(), WIDTH - 300, HEIGHT - 300, null);
+				break;
+			case SCORE:
+				camEngine(true, g2d);
+				sparkController.render(g2d);
+				camEngine(false, g2d);
+				break;
+			case ENDGAME:
+				camEngine(true, g2d);
+				sparkController.render(g2d);
+				camEngine(false, g2d);
+				break;
+			default:
+				break;
+			}
 			break;
 		}
 	}
