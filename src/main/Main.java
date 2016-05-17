@@ -297,7 +297,7 @@ public class Main extends Canvas implements Runnable {
 		coreB = new Tile(8, 1, Side.BACK, this);
 		coreF = new Tile(8, 1, Side.FRONT, this);
 
-		resetControllers();
+		resetControllers(false);
 
 		menu = new Menu(this);
 		menu.add("Start match");
@@ -385,11 +385,12 @@ public class Main extends Canvas implements Runnable {
 		mainTileMarket.populate(terminalTiles);
 	}
 
-	public void resetControllers() {
+	public void resetControllers(boolean help) {
 		xCam = -3 / 2 * WIDTH;
 		yCam = -2 * HEIGHT;
 		texture.clearDump(this);
 		helper = new Helper(this);
+		helper.setActive(help);
 		tc = new TileController(this);
 		pController = new PlayerController(this);
 		tileStack = new TileStack(this);

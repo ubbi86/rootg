@@ -230,7 +230,7 @@ public class StateController {
 
 	private void selectMenu(boolean def, boolean help) {
 		main.debug = def;
-		main.resetControllers();
+		main.resetControllers(help);
 		main.getHelper().setActive(help);
 		main.setState(GameState.SELECT_SIDE);
 		main.sideMarket();
