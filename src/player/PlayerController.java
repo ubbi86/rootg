@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+import main.GameState;
 import main.Main;
 import tiles.ProjectTile0;
 import tiles.ProjectTile1;
 
-public class PlayerController {
-	private ArrayList<Player> players;
+public class PlayerController extends ArrayList<Player>{
 	private ArrayList<Player> chooseOrder;
 	private ArrayList<Player> placementOrder;
 	private ArrayList<Player> lastPlacementOrder;
@@ -30,7 +30,6 @@ public class PlayerController {
 	// CONSTRUCTORS
 	public PlayerController(Main main) {
 		this.main = main;
-		players = new ArrayList<Player>();
 		chooseOrder = new ArrayList<Player>();
 		hudsOrder = new ArrayList<Player>();
 		huds = new ArrayList<HUD>();
@@ -41,24 +40,24 @@ public class PlayerController {
 	// GETTERS&SETTERS
 
 	public void setPowerSolder(Player p) {
-		for (Player player : players) {
+		for (Player player : this) {
 			player.setPowerSolder(player == p);
 		}
 	}
 
 	public Rectangle getPowerSolderClickArea() {
-		return huds.get(players.indexOf(activePlayer)).getPowerSolderClickArea();
+		return huds.get(indexOf(activePlayer)).getPowerSolderClickArea();
 	}
 
 	// return project square click area
 	public Rectangle getActivePlayerClickArea() {
 		if (activePlayer != null)
-			return huds.get(players.indexOf(activePlayer)).getClickArea();
+			return huds.get(indexOf(activePlayer)).getClickArea();
 		return new Rectangle();
 	}
 
 	public int getNumberOfPlayer() {
-		return players.size();
+		return size();
 	}
 
 	public Player getActivePlayer() {
@@ -66,7 +65,7 @@ public class PlayerController {
 	}
 
 	public Player getPlayerByColor(Color color) {
-		for (Player p : players)
+		for (Player p : this)
 			if (p.getColor() == color)
 				return p;
 		return null;
@@ -78,7 +77,7 @@ public class PlayerController {
 			return false;
 		if (begin)
 			placementOrder = (ArrayList<Player>) lastPlacementOrder.clone();
-		for (int i = 0; i < players.size(); i++)
+		for (int i = 0; i < size(); i++)
 			if (nextSwitchPlayer()) {
 				if (activePlayer.getChargeTokens() == 0) {
 					refresh = true;
@@ -93,7 +92,7 @@ public class PlayerController {
 
 	// drop pending charges for all players
 	public void discharge() {
-		for (Player p : players)
+		for (Player p : this)
 			p.discharge();
 		refresh = true;
 	}
@@ -125,18 +124,18 @@ public class PlayerController {
 		 * colors.remove(color); }
 		 */
 		if (def) {
-			players.add(new Player(Color.RED, 18, main));
-			players.add(new Player(Color.GREEN, 18, main));
+			add(new Player(Color.RED, 18, main));
+			add(new Player(Color.GREEN, 18, main));
 			// players.add(new Player(Color.BLUE, 12, main));
 		} else
 			for (int i = 0; i < colorList.size(); i++) {
 				Color color = colorList.get(i);
-				players.add(new Player(color, (colorList.size() == 2 ? 18 : 12), main));
+				add(new Player(color, (colorList.size() == 2 ? 18 : 12), main));
 			}
-		for (Player p : players)
+		for (Player p : this)
 			huds.add(new HUD(p, main));
 		assignProject(main.getHelper().isActive());
-		setPowerSolder(players.get(0));
+		setPowerSolder(get(0));
 		nextPlayerChoose();
 	}
 
@@ -162,13 +161,16 @@ public class PlayerController {
 		placementOrder.remove(activePlayer);
 		skips--;
 		refresh = true;
+		main.setActiveTile();
+		main.setMessage("Place tile");
+		main.setState(GameState.PLACE);
 		return activePlayer;
 	}
 
 	public boolean nextSwitchPlayer() {
 		if (placementOrder.size() == 0) {
 			if (anySwitchOn()) {
-				for (Player p : players)
+				for (Player p : this)
 					if (!p.getSwitch().isOn()) {
 						activePlayer = p;
 						refresh = true;
@@ -201,12 +203,12 @@ public class PlayerController {
 
 	// order players
 	private void makeOrder() {
-		chooseOrder = (ArrayList<Player>) players.clone();
+		chooseOrder = (ArrayList<Player>)super.clone();
 		Collections.sort(chooseOrder); // choose order is delay based
-		placementOrder = (ArrayList<Player>) players.clone();
+		placementOrder = (ArrayList<Player>)super.clone();
 		if (main.getTc().coreReady()) { // rotate placement order to put PS on
 										// top
-			for (Player p : players) {
+			for (Player p : this) {
 				if (p.hasPowerSolder())
 					break;
 				placementOrder.add(p);
@@ -218,12 +220,12 @@ public class PlayerController {
 		lastChooseOrder = (ArrayList<Player>) chooseOrder.clone();
 		lastPlacementOrder = (ArrayList<Player>) placementOrder.clone();
 		hudsOrder = lastPlacementOrder;
-		skips = players.size();
+		skips = size();
 	}
 
 	private void assignProject(boolean def) {
 		if (def) {// PROJECTS for tutorial
-			for (Player p : players) {
+			for (Player p : this) {
 				if (p.getColor() == Color.RED)
 					p.setProject(new ProjectTile0(3, main), new ProjectTile1(1, main));
 				else if (p.getColor() == Color.GREEN)
@@ -235,7 +237,7 @@ public class PlayerController {
 		ArrayList<ProjectTile0> p0 = new ArrayList<ProjectTile0>();
 		ArrayList<ProjectTile1> p1 = new ArrayList<ProjectTile1>();
 		ArrayList<Integer> rndArray = new ArrayList<Integer>();
-		while (rndArray.size() < players.size()) {
+		while (rndArray.size() < size()) {
 			int rnd = r.nextInt(3);
 			if (!rndArray.contains(rnd)) {
 				rndArray.add(rnd);
@@ -243,7 +245,7 @@ public class PlayerController {
 			}
 		}
 		rndArray = new ArrayList<Integer>();
-		while (rndArray.size() < players.size()) {
+		while (rndArray.size() < size()) {
 			int rnd = r.nextInt(3);
 			if (!rndArray.contains(rnd)) {
 				rndArray.add(rnd);
@@ -251,12 +253,12 @@ public class PlayerController {
 			}
 		}
 
-		for (int i = 0; i < players.size(); i++)
-			players.get(i).setProject(p0.get(i), p1.get(i));
+		for (int i = 0; i < size(); i++)
+			get(i).setProject(p0.get(i), p1.get(i));
 	}
 
 	public void calcWinner() {
-		for (Player p : players)
+		for (Player p : this)
 			p.setScore(p.getChargeTokens() * 2 + (p.hasPowerSolder() ? 1 : 0));
 		makeOrder();
 		hudsOrder = chooseOrder;
@@ -269,7 +271,7 @@ public class PlayerController {
 
 	// Charge and switches checking
 	public boolean anyDischarged() {
-		for (Player p : players)
+		for (Player p : this)
 			if (p.getChargeTokens() == 0)
 				return true;
 		return false;
@@ -277,31 +279,32 @@ public class PlayerController {
 	}
 
 	public boolean anySwitchOn() {
-		for (Player p : players)
+		for (Player p : this)
 			if (p.getSwitch().isOn())
 				return true;
 		return false;
 	}
 
 	public boolean anySwitchOff() {
-		for (Player p : players)
+		for (Player p : this)
 			if (!p.getSwitch().isOn())
 				return true;
 		return false;
 	}
 
 	public void setSwitches(boolean on) {
-		for (Player p : players)
+		for (Player p : this)
 			p.getSwitch().setOn(on);
 	}
 
 	public void penalty() {
 		if (activePlayer.hasPowerSolder()) {
 			activePlayer.setPowerSolder(false);
-			lastPlacementOrder.get(((lastPlacementOrder.indexOf(activePlayer) + 1) % players.size()))
+			lastPlacementOrder.get(((lastPlacementOrder.indexOf(activePlayer) + 1) % size()))
 					.setPowerSolder(true);
 		} else
 			activePlayer.addCharge(1);
+		setSwitches(false);
 		refresh = true;
 	}
 
@@ -313,14 +316,14 @@ public class PlayerController {
 	public void chargeDistrib() {
 		int chargePot = 0;
 		int dischargedPlayers = 0;
-		for (Player p : players) {
+		for (Player p : this) {
 			chargePot += p.getChargeTokens();
 			if (p.getChargeTokens() == 0)
 				dischargedPlayers++;
 		}
 		chargePot /= 3;
 		chargePot /= dischargedPlayers;
-		for (Player p : players)
+		for (Player p : this)
 			if (p.getChargeTokens() == 0)
 				p.setChargeTokens(chargePot);
 			else
@@ -336,15 +339,15 @@ public class PlayerController {
 			Graphics2D g = (Graphics2D) hCopy.getGraphics();
 			for (int i = 0; i < hudsOrder.size(); i++) {
 				Player p = hudsOrder.get(i);
-				HUD h = huds.get(players.indexOf(p));
+				HUD h = huds.get(indexOf(p));
 				h.setSize(p == activePlayer ? 1.4 : 1);
 				h.setYPos(i * 65 + 30);
 				h.render(g);
 			}
-			for (Player p : players) {
+			for (Player p : this) {
 				Switch s = p.getSwitch();
-				s.setxPos(players.indexOf(p) * 50 + 30);
-				s.setyPos(players.size() * 65 + 30);
+				s.setxPos(indexOf(p) * 50 + 30);
+				s.setyPos(size() * 65 + 30);
 				s.render(g);
 			}
 		}

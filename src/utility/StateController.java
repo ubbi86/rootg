@@ -1,5 +1,6 @@
 package utility;
 
+import java.awt.Color;
 import java.awt.Point;
 
 import main.GameState;
@@ -17,17 +18,21 @@ public class StateController {
 	private GameState prevState = GameState.MENU;
 	TileController tc;
 	PlayerController pc;
+	TileStack ts;
 
+	//CONSTRUCTORS
 	public StateController(Main main) {
 		this.main = main;
 		tc = main.getTc();
 		pc = main.getPlayerController();
+		ts = main.getTileStack();
 	}
-
+	
+	//METHODS
 	public void nextState(int x, int y) {
 		Point pFrame = new Point(x, y);
-		if (main.getState()!=GameState.MENU&&main.getHelper().isActive())
-			if (main.getHelper().isClicked(pFrame)||main.getHelper().isPaused())
+		if (main.getState() != GameState.MENU && main.getHelper().isActive())
+			if (main.getHelper().isClicked(pFrame) || main.getHelper().isPaused())
 				main.getHelper().nextStep();
 			else
 				return;
@@ -44,29 +49,16 @@ public class StateController {
 		case MENU:
 			switch (main.getMenu().select(pFrame)) {
 			case 0:
-				main.debug = false;
-				main.resetControllers();
-				main.getHelper().setActive(false);
-				main.setState(GameState.SELECT_SIDE);
-				main.sideMarket();
+				selectMenu(false, false);
 				break;
 			case 1:
-				main.debug = true;
-				main.resetControllers();
-				main.getHelper().setActive(false);
-				main.setState(GameState.SELECT_SIDE);
-				main.sideMarket();
+				selectMenu(true, false);
 				break;
 			case 2:
-				openMenu();
+				menu();
 				break;
 			case 3:
-				main.debug = false;
-				main.resetControllers();
-				main.getTileStack().makeStack(true);
-				main.getHelper().setActive(true);
-				main.setState(GameState.SELECT_SIDE);
-				main.sideMarket();
+				selectMenu(false, true);
 				break;
 			case 4:
 				main.stop();
@@ -76,14 +68,11 @@ public class StateController {
 			Tile t = tileMarket.select(x, y);
 
 			if (t != null) {
-				main.side = t.getSide();
-				main.getTileStack().setSide(main.side);
-				main.getTermStock().setSide(main.side);
+				main.setSide(t.getSide());
 				main.colorMarket();
-				if (main.debug) {
+				if (main.debug) 
 					main.startMatch();
-					main.setState(GameState.DRAW);
-				} else
+				else
 					main.setState(GameState.SELECT_PLAYERS);
 			}
 			break;
@@ -92,79 +81,55 @@ public class StateController {
 		case SELECT_PLAYERS: {
 			TerminalTile t = (TerminalTile) tileMarket.select(x, y);
 			if (t != null) {
-				pc.addColor(t.getColor());
-				tileMarket.removeByColor(t.getColor());
-				if (tileMarket.isEmpty()) {
+				Color color=t.getColor();
+				pc.addColor(color);
+				tileMarket.removeByColor(color);
+				if (tileMarket.isEmpty())
 					main.startMatch();
-					main.setState(GameState.DRAW);
-				}
 				break;
 			}
-			if (tileMarket.size() < 4) {
+			if (tileMarket.size() < 4)
 				main.startMatch();
-				main.setState(GameState.DRAW);
-			}
 			break;
 		}
 
 		case DRAW:
-			if (main.getTileStack().size() < pc.getNumberOfPlayer()) {
+			if (ts.size() < pc.getNumberOfPlayer()) {
 				goToScore();
 				pc.setSwitches(true);
 			} else if (clickOnCore(p)) {
 				main.setTileMarket();
-				main.setState(GameState.MARKET);
-				main.setMessage("Select a tile");
 			}
 			break;
 
 		case PLACE:
-			if (tc.coreReady() && pc.getPowerSolderClickArea().contains(pFrame)) {
-				if (pc.skip()) {
+			if (tc.coreReady() && pc.getPowerSolderClickArea().contains(pFrame))
+				if (pc.skip())
 					main.setMessage("Power solder yielded");
-					main.setActiveTile();
-					main.setState(GameState.PLACE);
-					break;
-				} else {
+				else
 					main.setMessage("Cannot skip");
-					break;
-				}
-			}
-			if (!main.getTileStack().getStackPos().contains(p))
+			else if (!ts.getStackPos().contains(p))
 				if (tc.addTile(main.getGrid().nearest(p))) {
 					if (!tc.coreReady()) {
 						pc.nextPlayerChoose();
-						main.addMessage(", draw a terminal tile (click on pile or core)");
-						main.setState(GameState.DRAW);
+						goToDraw();
 					} else // if (pc.getActivePlayer().getChargeTokens() != 0 &&
 							// !pc.anySwitchOn()) {
 						nextPlayer();
-				} /*
-					 * else { main.setMessage(
-					 * "Do you want to turn circuit on? (click on pile or core to pass)"
-					 * ); main.setState(GameState.SWITCH_SELECT); }
-					 * 
-					 * }
-					 */
+				}
 			break;
 
 		case MARKET:
 			if (main.getPlayerController().getActivePlayer().setTile(tileMarket.select(x, y)))
-				if (!tc.coreReady()) {
+				if (!tc.coreReady())
 					pc.nextPlayerPlace();
-					main.setActiveTile();
-					main.setState(GameState.PLACE);
-					main.setMessage("Place tile");
-				} else if (tileMarket.isEmpty()) {
+				else if (tileMarket.isEmpty())
 					pc.nextPlayerPlace();
-					main.setActiveTile();
-					main.setState(GameState.PLACE);
-					main.setMessage("Place tile");
-				} else {
+				else
 					pc.nextPlayerChoose();
-					main.setState(GameState.MARKET);
-				}
+					//main.setState(GameState.MARKET);
 			break;
+			
 		case PROJECT:
 			Tile t = pc.getActivePlayer().getProjectMarket().select(x, y, false);
 			if (t != null) {
@@ -177,36 +142,34 @@ public class StateController {
 				main.setState(prevState);
 			}
 			break;
+			
 		case SWITCH_SELECT:
 			Switch s = pc.getActivePlayer().getSwitch();
 			if (s.getClickArea().contains(pFrame)) {
 				s.setOn(true);
 				main.setMessage("Do you want to turn circuit on? (you'll be penalized if you don't... feel free)");
 				pc.nextSwitchPlayer();
-				if (!pc.anySwitchOff()) {
+				if (!pc.anySwitchOff())
 					goToScore();
-				}
 			} else if (clickOnCore(p)) {
 				if (pc.anySwitchOn()) {
 					pc.penalty();
-					pc.setSwitches(false);
 					pc.nextPlayerChoose();
-					main.setMessage("Draw new tiles (click on pile or core)");
+					goToDraw();
 					main.getHelper().setDischarged(false);
-					main.setState(GameState.DRAW);
 				} else {
 					if (pc.getFirstDischarged(false)) {
 						main.setMessage("Do you want to turn circuit on? (click on pile or core to pass)");
 						main.setState(GameState.SWITCH_SELECT);
 					} else {
 						pc.nextPlayerChoose();
-						main.setMessage("Draw new tiles (click on pile or core)");
+						goToDraw();
 						main.getHelper().setDischarged(false);
-						main.setState(GameState.DRAW);
 					}
 				}
 			}
 			break;
+			
 		case SCORE:
 			SparkController sc = main.getSparkController();
 			sc.moveSparks();
@@ -224,6 +187,15 @@ public class StateController {
 		main.setRefresh();
 	}
 
+	public void menu() {
+		if (main.getState() == GameState.MENU)
+			main.setState(prevState);
+		else {
+			prevState = main.getState();
+			main.setState(GameState.MENU);
+		}
+	}
+
 	private void nextPlayer() {
 		if (pc.endOfTurn()) {
 			if (pc.getFirstDischarged(true)) {
@@ -233,36 +205,36 @@ public class StateController {
 				main.setState(GameState.SWITCH_SELECT);
 			} else {
 				pc.nextPlayerChoose();
-				main.addMessage(", draw new tiles (click on pile or core)");
-				main.setState(GameState.DRAW);
+				goToDraw();
 			}
 		} else {
 			pc.nextPlayerPlace();
-			main.setActiveTile();
-			main.setMessage("Place tile");
-			main.setState(GameState.PLACE);
 		}
+	}
+
+	private void goToDraw() {
+		main.addMessage(", draw new tiles (click on pile or core)");
+		main.setState(GameState.DRAW);
 	}
 
 	private void goToScore() {
-		main.setState(GameState.SCORE);
 		pc.chargeDistrib();
 		main.setMessage("Let's turn on circuit! Beat the clock!");
 		tc.addSparks(main.getSparkController());
-		main.getSparkController().putTargets();
+		main.getSparkController().addTargetSparks();
+		main.setState(GameState.SCORE);
 	}
 
 	private boolean clickOnCore(Point p) {
-		return main.getTileStack().getStackPos().contains(p) || tc.getCoreClickArea().contains(p);
+		return ts.getStackPos().contains(p) || tc.getCoreClickArea().contains(p);
 	}
 
-	public void openMenu() {
-		if (main.getState() == GameState.MENU)
-			main.setState(prevState);
-		else {
-			prevState = main.getState();
-			main.setState(GameState.MENU);
-		}
-
+	private void selectMenu(boolean def, boolean help) {
+		main.debug = def;
+		main.resetControllers();
+		main.getHelper().setActive(help);
+		main.setState(GameState.SELECT_SIDE);
+		main.sideMarket();
 	}
+
 }

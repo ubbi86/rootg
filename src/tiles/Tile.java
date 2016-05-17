@@ -24,6 +24,7 @@ public class Tile extends BasicTile implements Cloneable {
 	private int mask = 0xFFFFFF;
 	private boolean fixColor;
 
+	// CONSTRUCTORS
 	public Tile(int tileNumber, double size, Side side, Main main) {
 		super(tileNumber, side, main.getTexture(), main.getIntLoader());
 		this.main = main;
@@ -54,6 +55,7 @@ public class Tile extends BasicTile implements Cloneable {
 		yPos = pos.y;
 	}
 
+	// GETTERS&SETTERS
 	public int getXCell() {
 		return xCell;
 	}
@@ -66,73 +68,16 @@ public class Tile extends BasicTile implements Cloneable {
 		return new Point(xCell, yCell);
 	}
 
-	public Point getPos() {
-		return new Point(xPos, yPos);
-	}
-
-	public int getAngle() {
-		int reducedAngle = angle;
-		while (reducedAngle < 0)
-			reducedAngle += 360;
-		//angle=reducedAngle;
-		
-		return reducedAngle % 360;
-	}
-	
-	public int getRenderAngle() {
-		int reducedAngle = renderAngle;
-		while (reducedAngle < 0)
-			reducedAngle += 360;
-		//angle=reducedAngle;
-		
-		return reducedAngle % 360;
-	}
-
-	public void setAngle(int angle) {
-		this.angle = angle;
-	}
-
-	public void rotate(int ticks) {
-		this.angle += (ticks * 60) % 360;
-	}
-
-	public void render(Graphics2D g2d) {
-		boolean rotating=(renderAngle != angle);
-		g2d.translate(xPos, yPos);
-		g2d.rotate(Math.toRadians((rotating?renderAngle:renderAngle%60)));
-		double scale = Main.TILESCALE * size;
-		g2d.drawImage(maskTexture((rotating?super.fetchTexture():fetchTexture())), (int) (-Texture.TILEWIDTH / 2 * scale * flip),
-				(int) (-Texture.TILEHEIGHT / 2 * scale), (int) (Texture.TILEWIDTH * scale * flip),
-				(int) (Texture.TILEHEIGHT * scale), null);
-
-		g2d.rotate(Math.toRadians(-(rotating?renderAngle:renderAngle%60)));
-		g2d.translate(-xPos, -yPos);
-
-	}
-
-	public void renderShadow(Graphics2D g2d) {
-		int offset = (int) ((size - 1) * Texture.TILEWIDTH * Main.TILESCALE);
-		double scale = Texture.TILEWIDTH * Main.TILESCALE * size;
-		double slope = 0.01 * size;
-		double newX = xPos + slope * (xPos - Main.WIDTH / 2) + offset;
-		double newY = yPos + slope * (yPos - Main.HEIGHT / 2) + offset;
-		g2d.translate(newX, newY);
-		g2d.rotate(Math.toRadians(renderAngle));
-		g2d.drawImage(
-				maskTexture(
-						main.getTexture().getShadow(side),
-						0x00FFFFFF | ((int) (0x9F * (2 - size) * (2 - size)) << 24)),
-				(int) (-scale * flip / 2), (int) (-scale / 2), (int) (scale * flip), (int) (scale), null);
-		g2d.rotate(Math.toRadians(-renderAngle));
-		g2d.translate(-newX, -newY);
-	}
-
 	public void setCell(Point p) {
 		xCell = (int) p.getX();
 		yCell = (int) p.getY();
 		Point pos = main.getGrid().grid(xCell, yCell);
 		xPos = (int) pos.getX();
 		yPos = (int) pos.getY();
+	}
+
+	public Point getPos() {
+		return new Point(xPos, yPos);
 	}
 
 	public void setPos(Point p) {
@@ -147,95 +92,40 @@ public class Tile extends BasicTile implements Cloneable {
 		return tileNumber;
 	}
 
-	public boolean tick() {
-		return tick(true);
-	}
-
-	public boolean tick(boolean dropping) {
-		// if (renderAngle == angle) {
-		// angle=getAngle();
-		// renderAngle = angle;
-		// }
-		boolean ans = false;
-		Tile activeTile = main.getActiveTile();
-		if (renderAngle != angle) {
-			ans |= (this != activeTile);
-			if (Math.abs(renderAngle - angle) < 10)
-				renderAngle = angle;
-			else
-				renderAngle += (angle - renderAngle) / 4;
-		}
-		
-		if (dropping && size > 1 && this != activeTile) {
-			ans = true;
-			double targetSize = (this != activeTile ? 1 : 1.2);
-			double dropspeed = (size - targetSize) / 4;
-			size -= dropspeed;
-			if (size - targetSize < 0.1)
-				size = targetSize;
-		}
-		if (flip < 1) {
-			ans |= (this != activeTile);
-			flip *= flipStep;
-			if (flip < 0.07){
-				flipStep =1.5;
-				setSide(side == Side.BACK?Side.FRONT:Side.BACK);
-			}
-			if (flip > 0.9) {
-				flip = 1;
-				flipStep = 0.75;
-			}
-		}
-
-		if (mask != 0xFFFFFFFF&&!fixColor) {
-			ans |= (this != activeTile);
-			mask = 0xFF000000 + ((mask & 0xFF0000) << 1 & 0xFF0000) 
-					+ ((mask & 0xFF00) << 1 & 0xFF00)
-					+ ((mask & 0xFF) << 1 & 0xFF);
-			mask |= 0x00010101;
-		}
-		return ans;
-	}
-
 	public void setSize(double size) {
 		this.size = size;
-
 	}
 
-	public void flip() {
-		flip = 0.99;
+	private int reducedAngle(int angle) {
+		int reducedAngle = angle;
+		while (reducedAngle < 0)
+			reducedAngle += 360;
+		return reducedAngle % 360;
 	}
 
-	public Interface getInterface(int side) {
-		return interf[originalSide(side)];
+	public int getAngle() {
+		return reducedAngle(angle);
 	}
 
-	public Interface[] getInterf() {
-		Interface[] interfOut = new Interface[6];
-		for (int i = 0; i < 6; i++)
-			interfOut[i] = getInterface(i);
-		return interfOut;
+	public int getRenderAngle() {
+		return reducedAngle(renderAngle);
 	}
 
-	public ArrayList<Integer> whereIsThis(Interface i) {
-		ArrayList<Integer> ans = super.whereIsThis(i);
-		ArrayList<Integer> newAns = new ArrayList<Integer>();
-		for (Integer j : ans) {
-			newAns.add((j + (getAngle() / 60)) % 6);
-		}
-		return newAns;
-	}
-	
-	public ArrayList<Integer> listSides(IO io) {
-		ArrayList<Integer> ans = new ArrayList<Integer>();
-		for (int i=0;i<6;i++) {
-			if(getInterface(i).getIo()==io||getInterface(i).getIo()==IO.BOTH)
-				ans.add(i);
-		}
-		return ans;
+	public void setAngle(int angle) {
+		this.angle = angle;
 	}
 
-	public Rectangle clickArea() {
+	public void setMask(Color color) {
+		setMask(color, false);
+	}
+
+	public void setMask(Color color, boolean fixColor) {
+		this.fixColor = fixColor;
+		mask = (fixColor ? 0xFF9F9F9F : 0xFF000000)
+				| ((color.getRed() << 15) | (color.getGreen() << 7) | color.getBlue());
+	}
+
+	public Rectangle getClickArea() {
 		return new Rectangle((int) (xPos - Texture.TILEWIDTH * size / 2), (int) (yPos - Texture.TILEHEIGHT * size / 2),
 				(int) (Texture.TILEWIDTH * size), (int) (Texture.TILEHEIGHT * size));
 	}
@@ -253,12 +143,142 @@ public class Tile extends BasicTile implements Cloneable {
 		return getGates(IO.BOTH);
 	}
 
+	public Interface getInterface(int side) {
+		return interf[originalSide(side)];
+	}
+
+	public Interface[] getInterf() {
+		Interface[] interfOut = new Interface[6];
+		for (int i = 0; i < 6; i++)
+			interfOut[i] = getInterface(i);
+		return interfOut;
+	}
+
+	// METHODS
+	public ArrayList<Integer> whereIsThis(Interface i) {
+		ArrayList<Integer> ans = super.whereIsThis(i);
+		ArrayList<Integer> newAns = new ArrayList<Integer>();
+		for (Integer j : ans) {
+			newAns.add((j + (getAngle() / 60)) % 6);
+		}
+		return newAns;
+	}
+
+	public ArrayList<Integer> listSides(IO io) {
+		ArrayList<Integer> ans = new ArrayList<Integer>();
+		for (int i = 0; i < 6; i++) {
+			if (getInterface(i).getIo() == io || getInterface(i).getIo() == IO.BOTH)
+				ans.add(i);
+		}
+		return ans;
+	}
+
 	public static int opposite(int sideIn) {
 		return (sideIn + 3) % 6;
 	}
 
 	public int originalSide(int rotatedSide) {
 		return (rotatedSide + (360 - getAngle()) / 60) % 6;
+	}
+
+	@Override
+	public Tile clone() throws CloneNotSupportedException {
+		return (Tile) super.clone();
+	}
+
+	//start flipping
+	public void flip() {
+		flip = 0.99;
+	}
+
+	public void rotate(int ticks) {
+		this.angle += (ticks * 60) % 360;
+	}
+
+	public boolean tick() {
+		return tick(true);
+	}
+
+	public boolean tick(boolean dropping) {
+		boolean ans = false;
+		Tile activeTile = main.getActiveTile();
+		
+		//rotate
+		if (renderAngle != angle) {
+			ans |= (this != activeTile);
+			if (Math.abs(renderAngle - angle) < 10)
+				renderAngle = angle;
+			else
+				renderAngle += (angle - renderAngle) / 4;
+		}
+		
+		//resize
+		if (dropping && size > 1 && this != activeTile) {
+			ans = true;
+			double targetSize = (this != activeTile ? 1 : 1.2);
+			double dropspeed = (size - targetSize) / 4;
+			size -= dropspeed;
+			if (size - targetSize < 0.1)
+				size = targetSize;
+		}
+		
+		//flip
+		if (flip < 1) {
+			ans |= (this != activeTile);
+			flip *= flipStep;
+			if (flip < 0.07) {
+				flipStep = 1.5;
+				setSide(side == Side.BACK ? Side.FRONT : Side.BACK);
+			}
+			if (flip > 0.9) {
+				flip = 1;
+				flipStep = 0.75;
+			}
+		}
+
+		//mask
+		if (mask != 0xFFFFFFFF && !fixColor) {
+			ans |= (this != activeTile);
+			mask = 0xFF000000 + ((mask & 0xFF0000) << 1 & 0xFF0000) + ((mask & 0xFF00) << 1 & 0xFF00)
+					+ ((mask & 0xFF) << 1 & 0xFF);
+			mask |= 0x00010101;
+		}
+		return ans;
+	}
+
+	public void render(Graphics2D g2d) {
+		boolean rotating = (renderAngle != angle);
+		g2d.translate(xPos, yPos);
+		g2d.rotate(Math.toRadians((rotating ? renderAngle : renderAngle % 60)));
+		double scale = Main.TILESCALE * size;
+		g2d.drawImage(maskTexture((rotating ? super.fetchTexture() : fetchTexture())),
+				(int) (-Texture.TILEWIDTH / 2 * scale * flip), (int) (-Texture.TILEHEIGHT / 2 * scale),
+				(int) (Texture.TILEWIDTH * scale * flip), (int) (Texture.TILEHEIGHT * scale), null);
+
+		g2d.rotate(Math.toRadians(-(rotating ? renderAngle : renderAngle % 60)));
+		g2d.translate(-xPos, -yPos);
+
+	}
+
+	public void renderShadow(Graphics2D g2d) {
+		int offset = (int) ((size - 1) * Texture.TILEWIDTH * Main.TILESCALE);
+		double scale = Texture.TILEWIDTH * Main.TILESCALE * size;
+		double slope = 0.01 * size;
+		double newX = xPos + slope * (xPos - Main.WIDTH / 2) + offset;
+		double newY = yPos + slope * (yPos - Main.HEIGHT / 2) + offset;
+		g2d.translate(newX, newY);
+		g2d.rotate(Math.toRadians(renderAngle));
+		g2d.drawImage(
+				maskTexture(main.getTexture().getShadow(side),
+						0x00FFFFFF | ((int) (0x9F * (2 - size) * (2 - size)) << 24)),
+				(int) (-scale * flip / 2), (int) (-scale / 2), (int) (scale * flip), (int) (scale), null);
+		g2d.rotate(Math.toRadians(-renderAngle));
+		g2d.translate(-newX, -newY);
+	}
+
+	@Override
+	protected BufferedImage fetchTexture() {
+		return texture.getTile(this);
 	}
 
 	private BufferedImage maskTexture(BufferedImage image) {
@@ -276,32 +296,6 @@ public class Tile extends BasicTile implements Cloneable {
 		BufferedImage maskedTex = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		maskedTex.setRGB(0, 0, width, height, imagePixels, 0, width);
 		return maskedTex;
-	}
-
-	public void setMask(Color color, boolean fixColor) {
-		this.fixColor=fixColor;
-		mask = (fixColor?0xFF9F9F9F:0xFF000000)|(
-					(color.getRed() << 15) 
-				| 	(color.getGreen() << 7) 
-				| 	color.getBlue());
-	}
-	
-	public void setMask(Color color){
-		setMask(color, false);
-	}
-
-	@Override
-	public Tile clone() throws CloneNotSupportedException {
-		return (Tile) super.clone();
-	}
-
-	public void setFixColor(boolean fixColor) {
-		this.fixColor = fixColor;
-	}
-
-	@Override
-	protected BufferedImage fetchTexture() {
-		return texture.getTile(this);
 	}
 
 }

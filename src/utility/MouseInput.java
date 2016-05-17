@@ -52,12 +52,9 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		Tile activeTile = main.getActiveTile();
-		if (activeTile != null)
-			activeTile.setPos(new Point((int) (e.getX() / main.getZoom()), (int) (e.getY() / main.getZoom())));
-		if (main.getState() == GameState.MENU)
-			main.getMenu().setHighlight(new Point(e.getX(), e.getY()));
-	}
+		moveActiveTile(e.getPoint());
+		menuHighlight(e.getPoint());
+		}
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent wheelEvent) {
@@ -68,8 +65,8 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		if (e.getButton()==MouseEvent.BUTTON2||e.getButton()==MouseEvent.BUTTON3)
-			main.getStateController().openMenu();
+		if (e.getButton() == MouseEvent.BUTTON2 || e.getButton() == MouseEvent.BUTTON3)
+			main.getStateController().menu();
 	}
 
 	@Override
@@ -97,11 +94,17 @@ public class MouseInput implements MouseInputListener, MouseWheelListener {
 			main.setRefresh();
 
 		}
-		Tile activeTile = main.getActiveTile();
-		if (activeTile == null)
-			return;
-		double zoom = main.getZoom();
-		activeTile.setPos(new Point((int) (e.getX() / zoom), (int) (e.getY() / zoom)));
+		moveActiveTile(e.getPoint());
+	}
 
+	private void moveActiveTile(Point p) {
+		Tile activeTile = main.getActiveTile();
+		if (activeTile != null)
+			activeTile.setPos(new Point((int) (p.getX() / main.getZoom()), (int) (p.getY() / main.getZoom())));
+	}
+	
+	private void menuHighlight(Point p){
+		if (main.getState() == GameState.MENU)
+			main.getMenu().setHighlight(p);
 	}
 }

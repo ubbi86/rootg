@@ -10,7 +10,7 @@ import tiles.Tile;
 public class Spark implements Cloneable {
 	private boolean logicValue;
 	private int charge;
-	protected Point pos=new Point();
+	protected Point pos = new Point();
 	protected ArrayList<Point> trajectory;
 	protected Point renderPos;
 	private Tile tile;
@@ -22,6 +22,7 @@ public class Spark implements Cloneable {
 	protected int minSpeed = 5;
 	protected int maxSpeed = 5;
 
+	// CONSTRUCTORS
 	public Spark(Tile tile, int side, int charge, boolean one, Main main) {
 		this(tile, side, charge, one, main, false);
 	}
@@ -44,54 +45,6 @@ public class Spark implements Cloneable {
 		this.logicValue = one;
 		this.main = main;
 		trajectory = new ArrayList<Point>();
-	}
-
-	public void tick() {
-		boolean ans = false;
-		if (trajectory.size() == 0) {
-			remove = toBeRemoved;
-			return;
-		}
-		Point target = trajectory.get(0);
-		double distX = target.getX() - renderPos.getX();
-		int newX = (int) target.getX();
-		double distY = target.getY() - renderPos.getY();
-		int newY = (int) target.getY();
-		double sqD=distX*distX+distY*distY;
-		double d=Math.sqrt(sqD);
-		if (sqD > minSpeed*minSpeed){
-			int speed=Math.min(maxSpeed,(int) Math.abs(d/3));
-			newX = (int) (renderPos.getX() + speed*distX/d);
-			newY = (int) (renderPos.getY() + speed*distY/d);}
-		renderPos.setLocation(newX, newY);
-		if (renderPos.getX() == target.getX() && renderPos.getY() == target.getY())
-			trajectory.remove(0);
-	}
-
-	public void render(Graphics2D g2d) {
-		double size = 50 + charge * 15;
-		g2d.drawImage(main.getTexture().getSpark(logicValue), (int) (renderPos.getX() - size / 2),
-				(int) (renderPos.getY() - size / 2), (int) size, (int) size, null);
-	}
-
-	public boolean isLogicValue() {
-		return logicValue;
-	}
-
-	public void setLogicValue(boolean logicValue) {
-		this.logicValue = logicValue;
-	}
-
-	public boolean getLogicValue() {
-		return logicValue;
-	}
-
-	public int getCharge() {
-		return charge;
-	}
-
-	public void setCharge(int charge) {
-		this.charge = charge;
 	}
 
 	public Point getPos() {
@@ -118,12 +71,12 @@ public class Spark implements Cloneable {
 		trajectory.add(pos);
 	}
 
-	public Tile getTile() {
-		return tile;
-	}
-
 	public void setTile(Tile tile) {
 		this.tile = tile;
+	}
+
+	public Tile getTile() {
+		return tile;
 	}
 
 	public int getSide() {
@@ -134,6 +87,22 @@ public class Spark implements Cloneable {
 		this.side = side;
 	}
 
+	public int getCharge() {
+		return charge;
+	}
+
+	public void setCharge(int charge) {
+		this.charge = charge;
+	}
+
+	public boolean getLogicValue() {
+		return logicValue;
+	}
+
+	public void setLogicValue(boolean logicValue) {
+		this.logicValue = logicValue;
+	}
+
 	public void setRemove() {
 		toBeRemoved = true;
 	}
@@ -142,7 +111,8 @@ public class Spark implements Cloneable {
 		return toBeRemoved;
 	}
 
-	public boolean remove() {
+	// METHODS
+	protected boolean remove() {
 		return remove;
 	}
 
@@ -150,5 +120,34 @@ public class Spark implements Cloneable {
 	protected Spark clone() throws CloneNotSupportedException {
 		// TODO Auto-generated method stub
 		return (Spark) super.clone();
+	}
+
+	public void tick() {
+		boolean ans = false;
+		if (trajectory.size() == 0) {
+			remove = toBeRemoved;
+			return;
+		}
+		Point target = trajectory.get(0);
+		double distX = target.getX() - renderPos.getX();
+		int newX = (int) target.getX();
+		double distY = target.getY() - renderPos.getY();
+		int newY = (int) target.getY();
+		double sqD = distX * distX + distY * distY;
+		double d = Math.sqrt(sqD);
+		if (sqD > minSpeed * minSpeed) {
+			int speed = Math.min(maxSpeed, (int) Math.abs(d / 3));
+			newX = (int) (renderPos.getX() + speed * distX / d);
+			newY = (int) (renderPos.getY() + speed * distY / d);
+		}
+		renderPos.setLocation(newX, newY);
+		if (renderPos.getX() == target.getX() && renderPos.getY() == target.getY())
+			trajectory.remove(0);
+	}
+
+	public void render(Graphics2D g2d) {
+		double size = 50 + charge * 15;
+		g2d.drawImage(main.getTexture().getSpark(logicValue), (int) (renderPos.getX() - size / 2),
+				(int) (renderPos.getY() - size / 2), (int) size, (int) size, null);
 	}
 }

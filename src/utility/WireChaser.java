@@ -211,13 +211,6 @@ public class WireChaser {
 		return ans;
 	}
 
-	public static void dischargeTerminals(TileController tc, Tile tile) {
-		ArrayList<TerminalTile> terminals = chaseInOut(tc, tile);
-		for (TerminalTile tTile : terminals)
-			tc.getMain().getPlayerController().getPlayerByColor(tTile.getColor()).setDischarge(tTile.getSpeed());
-
-	}
-
 	public static int calcDelay(TileController tc, TerminalTile tTile) {
 		int delay = 0;
 		int sideIn = tTile.whereIsThis(new Interface(IO.INPUT, Device.WIREA)).get(0);
@@ -234,7 +227,7 @@ public class WireChaser {
 		return delay;
 	}
 
-	private static int calcDelay(TileController tc, Tile t, int sideIn, int delay) {
+	public static int calcDelay(TileController tc, Tile t, int sideIn, int delay) {
 		Tile nextTile = tc.getFacingTile(t, sideIn);
 		if (nextTile != null) {
 			if (tc.getFacingInterface(t, sideIn).isOutGate())
@@ -248,6 +241,13 @@ public class WireChaser {
 		return delay;
 	}
 
+	public static void dischargeTerminals(TileController tc, Tile tile) {
+		ArrayList<TerminalTile> terminals = chaseInOut(tc, tile);
+		for (TerminalTile tTile : terminals)
+			tc.getMain().getPlayerController().getPlayerByColor(tTile.getColor()).setDischarge(tTile.getSpeed());
+
+	}
+
 	public static boolean gateComplete(Tile t, SparkController sc) {
 		ArrayList<Integer> inGates = t.getGates(IO.INPUT);
 		if (inGates.size() == 0)
@@ -256,18 +256,6 @@ public class WireChaser {
 			if (!sc.isSparked(t, i))
 				return false;
 		return true;
-	}
-
-	public static void main(String[] args) {
-		Texture tex = new Texture();
-		BasicTile t = new BasicTile(45, Side.BACK, tex, new InterfaceLoader());
-		ArrayList<Integer> outGatesSides = t.getGates(IO.INPUT);
-		for (Integer j : outGatesSides) {
-			ArrayList<Integer> ans = WireChaser.sidesOut(t, j);
-			System.out.println(t.getInterf()[j].getDevice());
-			System.out.println(ans);
-		}
-		System.out.println(false^true);
 	}
 	public static boolean isGate(Device device){
 		return (device!=Device.CORE&&
@@ -281,4 +269,15 @@ public class WireChaser {
 				device!=Device.CONST1);
 	}
 
+	/*public static void main(String[] args) {
+		Texture tex = new Texture();
+		BasicTile t = new BasicTile(45, Side.BACK, tex, new InterfaceLoader());
+		ArrayList<Integer> outGatesSides = t.getGates(IO.INPUT);
+		for (Integer j : outGatesSides) {
+			ArrayList<Integer> ans = WireChaser.sidesOut(t, j);
+			System.out.println(t.getInterf()[j].getDevice());
+			System.out.println(ans);
+		}
+		System.out.println(false^true);
+	}*/
 }

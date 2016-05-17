@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 
-import jdk.nashorn.internal.objects.annotations.Where;
 import main.Main;
 import player.Player;
 import player.PlayerController;
@@ -15,9 +14,8 @@ import tiles.TerminalTile;
 import tiles.Tile;
 import tiles.TileController;
 
-public class SparkController {
+public class SparkController extends ArrayList<Spark> {
 
-	private ArrayList<Spark> sparks;
 	private ArrayList<Spark> buffSparks;
 	private ArrayList<Spark> targetSparks;
 	private Main main;
@@ -25,14 +23,54 @@ public class SparkController {
 	private int coreServed;
 	boolean firstClock = true;
 
+	// CONSTRUCTORS
 	public SparkController(Main main) {
 		this.main = main;
-		sparks = new ArrayList<Spark>();
 		targetSparks = new ArrayList<Spark>();
 		firstClock = true;
 	}
 
-	public void putTargets() {
+	// GETTERS&SETTERS
+	public void setRemove(Tile t, int side) {
+		get(t, side).setRemove();
+	}
+
+	public void setRemove(TerminalTile tTile) {
+		get(tTile).setRemove();
+	}
+
+	public boolean isSparked(Tile t, int side) {
+		return get(t, side) != null;
+	}
+
+	public Spark get(Tile t, int side) {
+		for (int i = buffSparks.size() - 1; i >= 0; i--) {
+			Spark s = buffSparks.get(i);
+			if (s.getTile() == t && s.getSide() == side)
+				return s;
+		}
+		return null;
+	}
+
+	public Spark get(TerminalTile tTile) {
+		for (int i = targetSparks.size() - 1; i >= 0; i--) {
+			Spark s = targetSparks.get(i);
+			if (s.getTile() == tTile)
+				return s;
+		}
+		return null;
+	}
+
+	public boolean allProcessed() {
+		return coreServed == 6;
+	}
+
+	// METHODS
+	public void add(Tile t, int side, boolean logicValue) {
+		add(new Spark(t, side, charge, logicValue, main));
+	}
+
+	public void addTargetSparks() {
 		PlayerController pc = main.getPlayerController();
 		TileController tc = main.getTc();
 		TerminalTile[] core = tc.getCore();
@@ -43,76 +81,19 @@ public class SparkController {
 		}
 	}
 
-	public void add(Tile t, int side, boolean logicValue) {
-		sparks.add(new Spark(t, side, charge, logicValue, main));
-	}
-
-	public void add(Spark s) {
-		sparks.add(s);
-	}
-
-	public void remove(Tile t, int side) {
-		getSpark(t, side).setRemove();
-	}
-
-	public void remove(TerminalTile tTile) {
-		getSpark(tTile).setRemove();
-	}
-
-	public boolean isSparked(Tile t, int side) {
-		return getSpark(t, side) != null;
-	}
-
-	public Spark getSpark(Tile t, int side) {
-		for (int i = buffSparks.size() - 1; i >= 0; i--) {
-			Spark s = buffSparks.get(i);
-			if (s.getTile() == t && s.getSide() == side)
-				return s;
-		}
-		return null;
-	}
-
-	public Spark getSpark(TerminalTile tTile) {
-		for (int i = targetSparks.size() - 1; i >= 0; i--) {
-			Spark s = targetSparks.get(i);
-			if (s.getTile() == tTile)
-				return s;
-		}
-		return null;
-	}
-
-	public void tick() {
-		for (int i = 0; i < sparks.size(); i++) {
-			Spark s = sparks.get(i);
-			s.tick();
-			if (s.remove())
-				sparks.remove(s);
-		}
-	}
-
-	public void render(Graphics2D g2d) {
-		for (int i = 0; i < sparks.size(); i++)
-			sparks.get(i).render(g2d);
-		for (int i = 0; i < targetSparks.size(); i++) {
-			Spark s = targetSparks.get(i);
-			if (!s.getRemove())
-				s.render(g2d);
-		}
-	}
-
 	public void moveSparks() {
 		charge++;
 		boolean gateReached = false;
-		buffSparks = (ArrayList<Spark>) sparks.clone();
+		buffSparks = (ArrayList<Spark>) super.clone();
 		if (!firstClock)
 			for (int i = 0; i < buffSparks.size(); i++)
 				passGate(buffSparks.get(i));
 		firstClock = false;
-		for (int i = 0; i < sparks.size(); i++)
-			gateReached |= moveToNextTile(sparks.get(i));
+		for (int i = 0; i < size(); i++)
+			gateReached |= moveToNextTile(get(i));
 		if (gateReached)
 			charge = 0;
-		for (Spark s : sparks)
+		for (Spark s : this)
 			s.setCharge(charge);
 	}
 
@@ -183,9 +164,9 @@ public class SparkController {
 		ArrayList<Spark> sparksInvolved = new ArrayList<Spark>();
 		boolean outputLogicalValue = false;
 		if (tile.whereIsThis(new Interface(IO.INPUT, Device.DEMUX0)).size() > 0) {
-			Spark selectorSpark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
+			Spark selectorSpark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
 			sparksInvolved.add(selectorSpark);
-			Spark demux0Spark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.DEMUX0)).get(0));
+			Spark demux0Spark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.DEMUX0)).get(0));
 			sparksInvolved.add(demux0Spark);
 			for (Spark ss : sparksInvolved) {
 				ss.setPos(tile);
@@ -217,7 +198,7 @@ public class SparkController {
 		else {
 			ArrayList<Integer> inputSides = tile.whereIsThis(new Interface(IO.INPUT, dev));
 			for (Integer i : inputSides)
-				sparksInvolved.add(getSpark(tile, i));
+				sparksInvolved.add(get(tile, i));
 			switch (dev) {
 			case BUF:
 				outputLogicalValue = s.getLogicValue();
@@ -249,28 +230,28 @@ public class SparkController {
 			}
 
 			if (dev == Device.MUX0) {
-				Spark selectorSpark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
+				Spark selectorSpark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
 				sparksInvolved.add(selectorSpark);
 				Spark mux0Spark = sparksInvolved.get(0);
-				Spark mux1Spark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX1)).get(0));
+				Spark mux1Spark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX1)).get(0));
 				sparksInvolved.add(mux1Spark);
 				outputLogicalValue = (selectorSpark.getLogicValue() ? mux1Spark.getLogicValue()
 						: mux0Spark.getLogicValue());
 			}
 
 			if (dev == Device.MUX1) {
-				Spark selectorSpark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
+				Spark selectorSpark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.SELECTOR)).get(0));
 				sparksInvolved.add(selectorSpark);
 				Spark mux1Spark = sparksInvolved.get(0);
-				Spark mux0Spark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX0)).get(0));
+				Spark mux0Spark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX0)).get(0));
 				sparksInvolved.add(mux1Spark);
 				outputLogicalValue = (selectorSpark.getLogicValue() ? mux1Spark.getLogicValue()
 						: mux0Spark.getLogicValue());
 			}
 			if (dev == Device.SELECTOR && tile.whereIsThis(new Interface(IO.INPUT, Device.MUX0)).size() > 0) {
-				Spark mux0Spark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX0)).get(0));
+				Spark mux0Spark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX0)).get(0));
 				sparksInvolved.add(mux0Spark);
-				Spark mux1Spark = getSpark(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX1)).get(0));
+				Spark mux1Spark = get(tile, tile.whereIsThis(new Interface(IO.INPUT, Device.MUX1)).get(0));
 				sparksInvolved.add(mux1Spark);
 				Spark selectorSpark = sparksInvolved.get(0);
 				outputLogicalValue = (selectorSpark.getLogicValue() ? mux1Spark.getLogicValue()
@@ -305,13 +286,28 @@ public class SparkController {
 		tTile.setMask(color, true);
 		if (p.getProject(tTile.getSpeed()) == s.getLogicValue()) {
 			p.addCharge(charge);
-			getSpark(tTile).setCharge(charge);
+			get(tTile).setCharge(charge);
 		} else
 			remove(tTile);
 		main.getPlayerController().setRefresh();
 	}
 
-	public boolean allProcessed() {
-		return coreServed==6;
+	public void tick() {
+		for (int i = 0; i < size(); i++) {
+			Spark s = get(i);
+			s.tick();
+			if (s.remove())
+				remove(s);
+		}
+	}
+
+	public void render(Graphics2D g2d) {
+		for (int i = 0; i < size(); i++)
+			get(i).render(g2d);
+		for (int i = 0; i < targetSparks.size(); i++) {
+			Spark s = targetSparks.get(i);
+			if (!s.getRemove())
+				s.render(g2d);
+		}
 	}
 }

@@ -146,7 +146,7 @@ public class TileController {
 	}
 
 	public Rectangle getCoreClickArea() {
-		return tiles.get(0).clickArea();
+		return tiles.get(0).getClickArea();
 	}
 
 	public boolean isTerminal(Tile t) {

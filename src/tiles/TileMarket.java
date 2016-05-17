@@ -8,18 +8,16 @@ import java.util.ArrayList;
 
 import main.Main;
 
-public class TileMarket {
-	private ArrayList<Tile> tiles;
+public class TileMarket extends ArrayList<Tile>{
 	private Main main;
 	private boolean refresh = true;
 
 	public TileMarket(Main main) {
-		tiles = new ArrayList<Tile>();
 		this.main = main;
 	}
 
 	public boolean populate() {
-		while (tiles.size() < main.getPlayerController().getNumberOfPlayer()) {
+		while (size() < main.getPlayerController().getNumberOfPlayer()) {
 			Tile drawnTile = main.getTileStack().drawNextTile();
 			if (drawnTile == null)
 				return false;
@@ -37,31 +35,28 @@ public class TileMarket {
 		expose();
 	}
 
-	public void add(Tile tile) {
+	public boolean add(Tile tile) {
 		tile.setSize(1);
-		this.tiles.add(tile);
+		super.add(tile);
 		expose();
-	}
-
-	public void clear() {
-		tiles.clear();
+		return true;
 	}
 
 	public void expose() {
 		if (isEmpty())
 			return;
-		int stepX = Main.WIDTH / (Math.min(4, tiles.size() + 1));
-		int stepY = (int) (Main.HEIGHT / 3 / (Math.ceil(tiles.size() / 3.) + 1.));
-		for (int i = 0; i < tiles.size(); i++)
-			tiles.get(i).setPos(new Point((i % 3 + 1) * stepX, (int) (Main.HEIGHT / 3 + (i / 3 + 1) * stepY)));
+		int stepX = Main.WIDTH / (Math.min(4, size() + 1));
+		int stepY = (int) (Main.HEIGHT / 3 / (Math.ceil(size() / 3.) + 1.));
+		for (int i = 0; i < size(); i++)
+			get(i).setPos(new Point((i % 3 + 1) * stepX, (int) (Main.HEIGHT / 3 + (i / 3 + 1) * stepY)));
 	}
 
 	public boolean tick() {
 		// if (isEmpty())
 		// populate();
 		boolean ans = false;
-		for (int i = 0; i < tiles.size(); i++) {
-			ans |= tiles.get(i).tick(false);
+		for (int i = 0; i < size(); i++) {
+			ans |= get(i).tick(false);
 		}
 		refresh |= ans;
 		return ans;
@@ -79,8 +74,8 @@ public class TileMarket {
 			Graphics2D g=(Graphics2D)main.getTexture().getMarketDump().getGraphics();
 			g.setColor(new Color(255, 255, 255, 128));
 			g.fillRect(0, 0, Main.WIDTH, Main.HEIGHT);
-			for (int i = 0; i < tiles.size(); i++)
-				tiles.get(i).render(g);
+			for (int i = 0; i < size(); i++)
+				get(i).render(g);
 		}
 		g2d.drawImage(main.getTexture().getMarketDump(), 0,0,null);
 	}
@@ -90,10 +85,10 @@ public class TileMarket {
 	}
 
 	public Tile select(int x, int y, boolean remove) {
-		for (Tile t : tiles)
-			if (t.clickArea().contains(x, y)) {
+		for (Tile t : this)
+			if (t.getClickArea().contains(x, y)) {
 				if (remove)
-					tiles.remove(t);
+					remove(t);
 				refresh=true;
 				t.setSize(1.2);
 				return t;
@@ -102,22 +97,18 @@ public class TileMarket {
 	}
 
 	public void removeByColor(Color color) {
-		for (int i = tiles.size() - 1; i >= 0; i--)
-			if (((TerminalTile) tiles.get(i)).getColor() == color)
-				tiles.remove(i);
+		for (int i = size() - 1; i >= 0; i--)
+			if (((TerminalTile) get(i)).getColor() == color)
+				remove(i);
 		refresh=true;
 	}
 
 	public int size() {
-		int size = tiles.size();
-		for (Tile t : tiles)
+		int size = super.size();
+		for (Tile t : this)
 			if (t == null)
 				size--;
 		return size;
-	}
-
-	public Tile get(int index) {
-		return tiles.get(index);
 	}
 	
 	public void setRefresh(){

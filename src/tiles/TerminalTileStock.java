@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import main.Main;
 
 public class TerminalTileStock extends ArrayList<TerminalTile>{
-	//private ArrayList<TerminalTile> tiles;
 	//CONSTRUCTORS
 	public TerminalTileStock(Main main) {
-		//tiles = new ArrayList<TerminalTile>();
 		for (int i = 11; i < 20; i++) {
 			TerminalTile t = new TerminalTile(i, main);
 			add(t);

@@ -52,7 +52,7 @@ public class HUD {
 
 	public Rectangle getPowerSolderClickArea() {
 		if (player.hasPowerSolder())
-			return powerSolder.clickArea();
+			return powerSolder.getClickArea();
 		return new Rectangle();
 	}
 

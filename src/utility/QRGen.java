@@ -23,16 +23,6 @@ public class QRGen {
      * @throws WriterException
      * @throws IOException
      */
-    public static void main(String[] args) throws WriterException, IOException {
-        String qrCodeText = "http://www.journaldev.com";
-        String filePath = "C:\\Users\\U\\Dropbox\\Home-Work tunnel\\ROOTG\\2d.png";
-        int size = 125;
-        String fileType = "png";
-        File qrFile = new File(filePath);
-        createQRImage(qrFile, qrCodeText, size, fileType);
-        System.out.println("DONE");
-    }
- 
     private static void createQRImage(File qrFile, String qrCodeText, int size,
             String fileType) throws WriterException, IOException {
         // Create the ByteMatrix for the QR-Code that encodes the given String
