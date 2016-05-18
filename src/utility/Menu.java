@@ -28,18 +28,39 @@ public class Menu extends ArrayList<String> {
 
 	// GETTERS&SETTERS
 	public void setHighlight(Point p) {
-		boolean ans=highlight.indexOf(true)>=0;
+		boolean ans = highlight.indexOf(true) >= 0;
 		int i = select(p);
 		for (int j = 0; j < buttons.size(); j++)
 			if (i == j)
 				highlight.set(j, true);
 			else
 				highlight.set(j, false);
-		if (ans^highlight.indexOf(true)>=0)
+		if (ans ^ highlight.indexOf(true) >= 0)
 			main.setRefresh(1);
 	}
 
 	// METHODS
+
+	public void scrollMenu(int index) {
+		int pos = highlight.indexOf(true);
+		index += pos;
+		while (index < 0)
+			index += size();
+		index %= size();
+		if (pos >= 0)
+			highlight.set(pos, false);
+		highlight.set(index, true);
+		main.setRefresh(1);
+	}
+
+	public void selectMenu() {
+		int pos = highlight.indexOf(true);
+		if (pos >= 0) {
+			RoundRectangle2D.Float btn = buttons.get(pos);
+			main.getStateController().nextState((int) btn.getCenterX(), (int) btn.getCenterY());
+		}
+	}
+
 	public boolean add(String item) {
 		super.add(item);
 		buttons.clear();

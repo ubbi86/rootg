@@ -25,7 +25,6 @@ public class TileStack extends ArrayList<Tile>{
 		makeStack(false);
 	}
 	public void makeStack(boolean notRandom){
-		System.out.println("K");
 		ArrayList<Integer> rndArray = new ArrayList<Integer>();
 		if (notRandom)
 			for (int i:defaultStack)
