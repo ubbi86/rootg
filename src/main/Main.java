@@ -110,8 +110,8 @@ public class Main extends Canvas implements Runnable {
 		frame.setResizable(false);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-		frame.toFront();
-		frame.requestFocus();
+		setFocusable(true);
+		requestFocus();
 		
 		start();
 	}

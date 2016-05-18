@@ -115,7 +115,7 @@ public class KeyboardInput implements KeyListener {
 			turnOn();
 			break;
 		case KeyEvent.VK_I:
-			turnOn();
+			project();
 			break;
 		case KeyEvent.VK_ESCAPE:
 			main.getStateController().menu();
@@ -169,6 +169,11 @@ public class KeyboardInput implements KeyListener {
 				Tile t = main.getTileMarket().get(index);
 				main.getStateController().nextState(t.getPos().x, t.getPos().y);
 			}
+		if (state == GameState.PROJECT)
+				if (index < 2) {
+					Tile t = main.getPlayerController().getActivePlayer().getProjectMarket().get(index);
+					main.getStateController().nextState(t.getPos().x, t.getPos().y);
+				}
 	}
 
 	private void moveCam(int x, int y) {
